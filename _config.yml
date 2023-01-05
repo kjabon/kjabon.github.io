@@ -69,7 +69,7 @@ og_image: # The site-wide (default for all links) Open Graph preview image
 
 github_username: kjabon # your GitHub user name
 gitlab_username: # your GitLab user name
-twitter_username: Kenny_Jabon# your Twitter handle
+twitter_username: Kenny_Jabon # your Twitter handle
 mastodon_username: # your mastodon instance+username in the format instance.tld/@username
 linkedin_username: kenneth-jabon # your LinkedIn user name
 telegram_username: kjabon # your Telegram user name
@@ -87,7 +87,7 @@ keybase_username: # your keybase user name
 wikidata_id: # your wikidata id
 dblp_url: # your DBLP profile url
 stackoverflow_id: # your stackoverflow id
-kaggle_id: # your kaggle id
+kaggle_id: KennyJabon # your kaggle id
 lastfm_id: # your lastfm id
 spotify_id: kennyjabon # your spotify id
 pinterest_id: # your pinterest id
@@ -98,7 +98,7 @@ youtube_id: # your youtube channel id (youtube.com/@<youtube_id>)
 discord_id: # your discord id (18-digit unique numerical identifier)
 
 contact_note: >
-  Work: Please use email, I rarely check LinkedIn.
+  For work-related inquiries: Please use email, I rarely check LinkedIn.
 
 # -----------------------------------------------------------------------------
 # Analytics and search engine verification
