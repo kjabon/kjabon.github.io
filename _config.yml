@@ -69,7 +69,7 @@ og_image: # The site-wide (default for all links) Open Graph preview image
 
 github_username: kjabon # your GitHub user name
 gitlab_username: # your GitLab user name
-twitter_username: Kenny_Jabon # your Twitter handle
+twitter_username:  # your Twitter handle
 mastodon_username: # your mastodon instance+username in the format instance.tld/@username
 linkedin_username: kenneth-jabon # your LinkedIn user name
 telegram_username: kjabon # your Telegram user name
@@ -87,9 +87,9 @@ keybase_username: # your keybase user name
 wikidata_id: # your wikidata id
 dblp_url: # your DBLP profile url
 stackoverflow_id: # your stackoverflow id
-kaggle_id: KennyJabon # your kaggle id
+kaggle_id:  # your kaggle id
 lastfm_id: # your lastfm id
-spotify_id: kennyjabon # your spotify id
+spotify_id:  # your spotify id
 pinterest_id: # your pinterest id
 unsplash_id: # your unsplash id
 instagram_id: # your instagram id
