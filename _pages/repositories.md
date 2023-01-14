@@ -1,9 +1,10 @@
 ---
 layout: page
 permalink: /repositories/
-title: repositories
-description: Edit the `_data/repositories.yml` and change the `github_users` and `github_repos` lists to include your own GitHub profile and repositories.
-nav: false
+title: repos
+description: See the respective <a href= 'https://kjabon.github.io/blog/'>blog posts</a> for an introductory explanation. I highly recommend setting up an instance of coachRL to form the good habits you never knew you could. Fork my code at your own risk :)
+#Edit the `_data/repositories.yml` and change the `github_users` and `github_repos` lists to include your own GitHub profile and repositories.
+nav: true
 nav_order: 3
 ---
 
