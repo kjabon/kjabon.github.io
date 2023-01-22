@@ -1,97 +1,136 @@
-- title: General Information
-  type: map
-  contents:
-    - name: Full Name
-      value: Kenneth Michael Jabon
-    - name: Date of Birth
-      value: 9th November 1993
-    - name: Languages
-      value: English, Spanish
+
 
 - title: Education
   type: time_table
   contents:
-    - title: M.S.
-      institution: Boston University, Boston, MA, USA
-      year: 2020
+    - title: M.S., Materials Science
+      institution: Boston University
+      description: GPA 3.94
+      year: 2018-2020
+
+    - title: B.S. Materials Science; Minor, Computer Science, with Honors
+      institution: University of Illinois, Urbana-Champaign
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
+        - GPA 3.6
+        - title: Selected coursework
           contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Federal teaching diploma
-      institution: Eidgenössische Technische Hochschule, Zurich, Switzerland
-      year: 1900
-      description:
-        - Description 1.
-        - Description 2.
+            - Discrete Structures
+            - Data Structures
+            - System Programming
+            - Numerical Methods
+            - Database Systems
+      year: 2012-2016
+
 
 - title: Experience
   type: time_table
   contents:
-    - title: Professor of Theoretical Physics
-      institution: Institute for Advanced Study, Princeton University
-      year: 1933 - 1955
+  
+    - title: Personal Projects and Self-education in Deep Reinforcement Learning
+      year: 2021 - 2023
+      description: 
+        - Applied MPO, PPO, MuZero to habit <a href='/blog/2023/distill'>formation</a>, photonic device <a href="/blog/2023/PRL">design</a>, and game <a href='/blog/2023/gamedev'>development</a>.
+        - Reimplemented Vanilla PG, DQN, TRPO, PPO, MuZero (began with OpenAI <a href="https://spinningup.openai.com/en/latest/">Spinning Up</a>)
+        - Took David Silver <a href="https://www.deepmind.com/learning-resources/introduction-to-reinforcement-learning-with-david-silver">course</a> on RL, currently reading <a href="http://www.incompleteideas.net/book/the-book-2nd.html">Sutton & Barto</a>, and <a href="https://rltheorybook.github.io/">Agarwal, Jiang, et al</a>.
+        - title: Studied deep learning foundations from Andrew Ng's Coursera courses
+          contents: 
+          - Deep Learning <a href="https://www.coursera.org/specializations/deep-learning">Specialization</a> (MLPs, CNNs, best practices)
+          - NLP <a href="https://www.coursera.org/specializations/natural-language-processing">Specialization</a> (Attention and Transformers)
+          - GAN <a href="https://www.coursera.org/specializations/generative-adversarial-networks-gans">Specialization</a>
+      
+    - title: PDK Engineer
+      institution: Analog Photonics
+      year: 2021 - 2022
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
-          contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Visiting Professor
-      institution: California Institute of Technology, Pasadena, California, US
-      year: 1933
+        - Studied higher-order mode coupling to second order microring filter for device redesign.
+        - Recentered PDK designs based on measured fabrication offsets, documented device performance.
+    
+    - title: Graduate Researcher
+      institution: Popovi&#263; Group, Photonics Center, Boston University
+      year: 2019-2021
       description:
-        - Description 1.
-        - Description 2.
-
-    - title: Director
-      institution: Kaiser Wilhelm Institute for Physics, Berlin, Germany.
-      year: 1917-1933
-
-    - title: Professor of Theoretical Physics
-      institution: Karl-Ferdinand University, Prague, Czechoslovakia
-      year: 1911 - 1917
+        - Designed and demonstrated silicon photonic microring-based photon pair source.
+        - Device improves four-wave mixing efficiency by tuning ring dispersion, and sets the purity and escape efficiency of the output photon pairs by setting coupling to each ring resonance with a 2-point coupler.
+        - Developed a custom finite difference frequency domain Maxwell's equations solver in MATLAB.
+    
+    - title: Photonic Automation Engineer
+      institution: Analog Photonics
+      year: 2018 - 2021
       description:
+        - Developed edge-coupled electro-optical testing of photonic chips on 300mm silicon wafer.
+        - Wrote back-end and GUI for CM300 wafer prober for 6-axis optical alignment and fiber array attach.
+        - Wrote internal messaging system code for optical phased array-based LiDAR.
+        - Studied higher-order mode coupling to second order microring filter for device redesign.
+    
+    
 
-    - title: Associate Professor of Theoretical Physics
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1909 - 1911
+    - title: Process Engineer
+      institution: IPG Photonics
+      year: 2017-2018
+      description:
+        - Redesigned station and wrote C# program to align volume Bragg gratings (VBG) for wavelength stabilization of laser diodes. 
+        - Wrote C# program for automated scribing of laser bars.
 
-- title: Open Source Projects
+    - title: Undergraduate Researcher
+      institution: Lyding Group, Beckman Institute, UIUC
+      year: 2015 - 2016
+      description:
+        - Studied charge density waves in TaS2 and graphene nano-ribbons with scanning tunneling microscopy (STM). 
+        - Determined topography, local electron density, and band structure.
+
+    - title: Stretchable Electronics Research
+      institution: John Rogers Group, Materials Research Laboratory, UIUC
+      year: Summer 2014
+      description:
+        - Determined electrical response of different device geometries under mechanical strain. 
+        - Fabricated Au-based stretchable electronics in cleanroom. Photolithography, PVD, RIE. 
+
+- title: Publications
   type: time_table
   contents:
-    - title: <a href="https://github.com/alshedivat/al-folio">al-folio</a>
-      year: 2015-now
-      description: A beautiful, simple, clean, and responsive Jekyll theme for academics.
+    - year: 2022
+      items: 
+        - K.M. Jabon, I. Wang, M.A. Popovic, <br><a href="/publications">Dispersion-compensated</a> microring photon pair source design with tunable purity-pair rate-heralding efficiency tradeoff,<br> in Conference on Lasers and Electro-Optics (CLEO) 2022, San Jose, CA, USA, 2022, pp. 1-2.
+    - year: 2021
+      items: 
+        - K.M. Jabon, C.V. Poulton, ..., D. Atlas, M.R. Watts and E. Timurdogan, <br><a href="/publications">Edge-coupled</a> Active and Passive Wafer-Scale Measurements on 300mm Silicon Photonics Wafers, <br>in Proceedings of the Optical Fiber Communication Conference (OFC) 2021, OSA Technical Digest, paper M3A.1.
+     
+
+#
+#- title: Open Source Projects
+#  type: time_table
+#  contents:
+#    - title: <a href="https://github.com/alshedivat/al-folio">al-folio</a>
+#      year: 2015-now
+#      description: A beautiful, simple, clean, and responsive Jekyll theme for academics.
 
 - title: Honors and Awards
   type: time_table
   contents:
-    - year: 1921
+    - year: 2018-2020
       items: 
-        - Nobel Prize in Physics 
-        - Matteucci Medal
-    - year: 2029
+        - Boston University Dean's Scholarship ($30,000 - half tuition)
+    - year: 2012-2016
       items: 
-        - Max Planck Medal
+        - UIUC College of Engineering Grant for Academic Excellence ($10,000)
+        - UIUC James Scholar and Rakers Scholar
 
-- title: Academic Interests
-  type: nested_list
-  contents:
-    - title: Topic 1.
-      items: 
-        - Description 1.
-        - Description 2.
-    - title: Topic 2.
-      items:
-        - Description 1.
-        - Description 2.
 
-- title: Other Interests
+
+
+- title: Hobbies
   type: list
   contents:
-    - <u>Hobbies:</u> Hobby 1, Hobby 2, etc.
+    - Homemade from-scratch ramen, and trying new recipes
+    - Rock climbing and basketball
+    - Piano and violin
+    - Meditation and reading
+    - Only the finest espresso
+    
+- title: Languages
+  type: map
+  contents:
+    - name: Experienced
+      value: Python, C#, C++, Matlab. 
+    - name: Intermediate
+      value: Java, C, SQL, Verilog, MIPS, HTML, Excel, Spanish

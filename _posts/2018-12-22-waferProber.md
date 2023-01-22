@@ -1,7 +1,7 @@
 ---
 layout: distill
-title: CoachRL
-description: Forming good habits by following daily recommendations from a learning agent.
+title: Wafer Probing of Silicon Photonics
+description: Electro-optic measurements of integrated photonic devices on the wafer scale.
 giscus_comments: true
 date: 2023-01-16
 

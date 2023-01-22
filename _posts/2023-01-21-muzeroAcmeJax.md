@@ -1,9 +1,9 @@
 ---
 layout: distill
-title: CoachRL
-description: Forming good habits by following daily recommendations from a learning agent.
+title: MuZero in Acme
+description: An implementation of DeepMind's breakthrough algorithm, with improvements.
 giscus_comments: true
-date: 2023-01-16
+date: 2023-01-21
 
 authors:
   - name: Kenneth Jabon
@@ -51,7 +51,9 @@ _styles: >
 
 ---
 
-## Why habits?
+## Why MuZero?
+
+Implemented Sampled-MuZero-Reanalyze with sample-efficiency improvements found here, in JAX, in DeepMind's Acme RL framework, synthesizing these implementations. The goal here was my own understanding, and to build it for my own and others' general usage, particularly given its outstanding performance in discrete action spaces. (Full understanding of two source implementations complete; I've just begun to combine them in JAX/Acme.)
 
 >We are what we repeatedly do. Excellence, therefore, is not an act but a habit.
 
