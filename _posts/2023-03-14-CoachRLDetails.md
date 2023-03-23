@@ -93,7 +93,7 @@ Before settling on this, I read Google is shifting to JAX from Tensorflow for it
 
 A recent [paper](https://arxiv.org/abs/2208.07860) out of [Berkeley](https://sites.google.com/berkeley.edu/walk-in-the-park) additionally saw a 16x speedup using JAX over PyTorch, enabling fast (20 minutes!) in-the-wild robot locomotion learning - something previously thought to be impossible due to sample efficiency. Read more about why JAX rules [here](https://www.assemblyai.com/blog/why-you-should-or-shouldnt-be-using-jax-in-2023/). I found [Acme](https://github.com/deepmind/acme), geared towards JAX, while using Tensorflow, to be the most comprehensive, maintained, and extendable framework. 
 
-<iframe width="672" height="378" src="https://www.youtube.com/embed/YO1USfn6sHY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/YO1USfn6sHY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 <div class="caption">
 Robot locomotion, learned in-the-wild in less than 20 minutes with JAX.
 </div>
