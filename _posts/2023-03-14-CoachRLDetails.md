@@ -164,6 +164,7 @@ def sample(params, key: networks_lib.PRNGKey):
     samp = jnp.stack([dist.sample(seed=key) for dist in get_distribution(params)], axis=1)
     return samp
 </d-code>
+
 <div class="caption">
 JAX/Python code for interfacing with neural networks to compute the log probabilities for use in policy gradient, and sampling from the Multi-Categorical probability distributions given a stack of parameters for those distributions.
 </div>
