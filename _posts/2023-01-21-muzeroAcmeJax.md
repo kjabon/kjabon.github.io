@@ -3,6 +3,7 @@ layout: distill
 title: MuZero in Acme
 description: An implementation of DeepMind's breakthrough algorithm, with improvements.
 giscus_comments: true
+tags: rl
 date: 2023-01-21
 
 authors:

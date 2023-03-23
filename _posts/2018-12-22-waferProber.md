@@ -3,6 +3,7 @@ layout: distill
 title: Wafer Probing of Silicon Photonics
 description: Electro-optic measurements of integrated photonic devices on the wafer scale.
 giscus_comments: true
+tags: photonics
 date: 2023-01-16
 
 authors:
