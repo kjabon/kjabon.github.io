@@ -153,14 +153,10 @@ I did not have a good intuition for how large a network may be required, how man
 Finally, the PPO implementation in Acme did not support MultiDiscrete action spaces. That is, 3 possible actions for habit A, 5 possible actions for habit B, and so on. To fix this, given neural network. Taking inspiration from the Stable Baselines codebase, I wrote a similar implementation in JAX, a sample of which is below. **Link to code!**
 
 <d-code block language="python">
-# Extract each discrete action and compute log prob for their respective distributions
-
 def log_prob(params, actions):
     logProb = jnp.stack([dist.log_prob(action) for dist, action in
         zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)
     return logProb
-
-# Sample from the multi-categorical distribution
 
 def sample(params, key: networks_lib.PRNGKey):
     samp = jnp.stack([dist.sample(seed=key) for dist in get_distribution(params)], axis=1)
@@ -173,31 +169,21 @@ def sample(params, key: networks_lib.PRNGKey):
 JAX/Python code for interfacing with neural networks to compute the log probabilities for use in policy gradient, and sampling from the Multi-Categorical probability distributions given a stack of parameters for those distributions.
 </div>
 
-````markdown
-```c++
-code code code
-```
-````
+{% highlight python %}
+# Extract each discrete action and compute log prob for their respective distributions
 
-```c++
-int main(int argc, char const \*argv[])
-{
-    string myString;
+def log_prob(params, actions):
+    logProb = jnp.stack([dist.log_prob(action) for dist, action in
+        zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)
+    return logProb
 
-    cout << "input a string: ";
-    getline(cin, myString);
-    int length = myString.length();
+# Sample from the multi-categorical distribution
 
-    char charArray = new char * [length];
+def sample(params, key: networks_lib.PRNGKey):
+    samp = jnp.stack([dist.sample(seed=key) for dist in get_distribution(params)], axis=1)
+    return samp
+{% endhighlight %}
 
-    charArray = myString;
-    for(int i = 0; i < length; ++i){
-        cout << charArray[i] << " ";
-    }
-
-    return 0;
-}
-```
 
 ## Simulation Training 
 Before thinking about training in simulation, I made an environment for reading EMAs from Google sheets, inputting this observation into the model, massaging the output a little, and writing the result back into Google sheets. All that was needed to simulate this process was to replace the calls to the Google Docs API with reading and writing from a queue whose elements represented all actions and EMAs for the day, and calculating said EMAs in Python instead.
