@@ -182,6 +182,18 @@ Finally, the PPO implementation in Acme did not support MultiDiscrete action spa
 </pre>
 </d-code>
 
+{% capture string_with_newlines %}
+  var x = 25;
+  function(x) {
+    return x * x;
+  }
+{% endcapture %}
+<d-code block language="javascript">
+{{ string_with_newlines | newline_to_br }}
+</d-code>
+
+
+
 
 <div class="caption">
 JAX/Python code for interfacing with neural networks to compute the log probabilities for use in policy gradient, and sampling from the Multi-Categorical probability distributions given a stack of parameters for those distributions.
