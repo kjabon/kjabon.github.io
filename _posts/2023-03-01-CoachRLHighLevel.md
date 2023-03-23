@@ -111,7 +111,7 @@ Telegram interface for getting rewards from CoachRL.
 
 See more for how and why to tune rewards, and snowballing good behaviors, in this previous blog [post](/blog/2023/distill/). 
 
-For the technical details of how the backend works, see the next [post]().
+For the technical details of how the backend works, see the next [post](/blog/2023/CoachRLDetails/).
 
 If there's interest (via Github stars or comments below), I can make a post about setting it up for yourself.
 
