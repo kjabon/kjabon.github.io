@@ -121,6 +121,12 @@ function(x) {
 }
 {% endhighlight %}
 
+<pre class="line-numbers">
+   <code class="language-css">
+      p { color: red }
+   </code>
+</pre>
+
 ***
 
 ## Interactive Plots
