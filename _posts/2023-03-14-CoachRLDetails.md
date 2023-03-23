@@ -153,9 +153,9 @@ I did not have a good intuition for how large a network may be required, how man
 Finally, the PPO implementation in Acme did not support MultiDiscrete action spaces. That is, 3 possible actions for habit A, 5 possible actions for habit B, and so on. To fix this, given neural network. Taking inspiration from the Stable Baselines codebase, I wrote a similar implementation in JAX, a sample of which is below. **Link to code!**
 
 <d-code block language="python">
-  def log_prob(params, actions):
-    logProb = jnp.stack([dist.log_prob(action) for dist, action in
-      zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)
+  def log_prob(params, actions):\n
+    logProb = jnp.stack([dist.log_prob(action) for dist, action in\n
+      zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)\n
     return logProb
 
   def sample(params, key: networks_lib.PRNGKey):
