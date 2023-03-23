@@ -153,36 +153,27 @@ I did not have a good intuition for how large a network may be required, how man
 Finally, the PPO implementation in Acme did not support MultiDiscrete action spaces. That is, 3 possible actions for habit A, 5 possible actions for habit B, and so on. To fix this, given neural network. Taking inspiration from the Stable Baselines codebase, I wrote a similar implementation in JAX, a sample of which is below. **Link to code!**
 
 <d-code block language="python">
-def log_prob(params, actions):
+  def log_prob(params, actions):
     logProb = jnp.stack([dist.log_prob(action) for dist, action in
-        zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)
+      zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)
     return logProb
 
-def sample(params, key: networks_lib.PRNGKey):
+  def sample(params, key: networks_lib.PRNGKey):
     samp = jnp.stack([dist.sample(seed=key) for dist in get_distribution(params)], axis=1)
     return samp
 </d-code>
 
-
+<d-code block language="javascript">
+  var x = 25;
+  function(x) {
+    return x * x;
+  }
+</d-code>
 
 <div class="caption">
 JAX/Python code for interfacing with neural networks to compute the log probabilities for use in policy gradient, and sampling from the Multi-Categorical probability distributions given a stack of parameters for those distributions.
 </div>
 
-{% highlight python %}
-# Extract each discrete action and compute log prob for their respective distributions
-
-def log_prob(params, actions):
-    logProb = jnp.stack([dist.log_prob(action) for dist, action in
-        zip(get_distribution(params), jax_unstack(actions, axis=1))], axis=1).sum(axis=1)
-    return logProb
-
-# Sample from the multi-categorical distribution
-
-def sample(params, key: networks_lib.PRNGKey):
-    samp = jnp.stack([dist.sample(seed=key) for dist in get_distribution(params)], axis=1)
-    return samp
-{% endhighlight %}
 
 
 ## Simulation Training 
