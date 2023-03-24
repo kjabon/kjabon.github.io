@@ -73,10 +73,8 @@ Software used:
 - iCloud to transfer weight data to a local csv file.
 - Google sheets for an interactive log of daily habits, and running averages.
 - Python, and many libraries, most importantly Acme from Deepmind, which uses a JAX implementation of PPO. In the future I plan on switching to MPO/MuZero for sample efficiency and performance. Also, libraries for communicating with iCloud and Google sheets.
-{% include figure.html path="assets/img/acme.png" title="Use JAX" class="img-fluid rounded z-depth-1" %} 
-<div class="caption">
-Use Acme.
-</div>
+{% include figure.html path="assets/img/acme.png" title="Use JAX" class="img-fluid rounded " caption="Use Acme" %} 
+
 
 ## RL Frameworks
 
@@ -85,7 +83,7 @@ This project originated in PyTorch, using Stable Baselines 3. However, scaling a
 
 Before settling on this, I read Google is shifting to JAX from Tensorflow for its internal deep learning use cases. If we assume Tensorflow to be the industry standard for production deep learning, and its creators have come up with something more performant, then I'm not going to argue. 
 
-{% include figure.html path="assets/img/jax.svg" title="Use JAX" class="img-fluid rounded z-depth-1" %} 
+{% include figure.html path="assets/img/jax.svg" title="Use JAX" class="img-fluid rounded " %} 
 <div class="caption">
 "JAX has the potential to be orders of magnitude faster than NumPy <br>(n.b. JAX is using TPU and NumPy is using CPU in order to highlight that JAX's speed ceiling...)." <d-footnote>Figure and caption from blog post by Ryan O'Connor at AssemblyAI. [https://www.assemblyai.com/blog/why-you-should-or-shouldnt-be-using-jax-in-2023/]</d-footnote>
 
@@ -108,10 +106,8 @@ What data are we processing, and what observation does the RL algorithm receive?
 
 The spreadsheet maintains a daily record of the [exponential moving average](https://en.wikipedia.org/wiki/Exponential_smoothing) (EMA) of the habit performance, normalized to your goal (see below figure in blue). Suppose my goal is to run 30 minutes a day, 5 days a week. If I don't run at all, I would input a 0, and if this goes on for long, the EMA would eventually go to 0 as well. If I ran today for 30 minutes, I would input a 1, which would be normalized to 1*7(days in a week)/5 (days to run per week). 7/5 would be used as today's update to the ongoing EMA, which will eventually converge to 1 if interspersed with two 0's per week. The exact values and normalizations can be changed to suit your needs. Inputting 30 for a 30 minute run would work, so long as you're normalizing it to 1 in the EMA calculation. (1 is assumed to be the optimal value for all goals). This is repeated for every daily habit.
 
-{% include figure.html path="assets/img/habitSheet.jpg" title="Use JAX" class="img-fluid rounded z-depth-1" %} 
-<div class="caption">
-Values circled in red are the manually entered habits for the day. EMA in blue. Let's avoid the "manual" part.
-</div>
+{% include figure.html path="assets/img/habitSheet.jpg" title="Use JAX" class="img-fluid rounded " caption="Values circled in red are the manually entered habits for the day. EMA in blue. Let's avoid the 'manual' part."%} 
+
 
 Now, if that sounds tedious, I agree! Having to manually input your habits every day, planning exactly what to do to meet your goals, etc. is a right pain. What if we could manage our habits without having to manually input anything? That is one problem we are here to solve. 
 
@@ -124,7 +120,7 @@ Get a reinforcement learning algorithm to do it for us. All the pieces required 
 
 As you may recall, a reinforcement learning algorithm progresses through a trajectory of time steps. Each time step is composed of an observation, an action, an observation following that action, and a reward associated with the transition. Read [Sutton and Barto](http://www.incompleteideas.net/book/the-book-2nd.html) for more details.
 
-{% include figure.html path="assets/img/RLProblem.png" title="RL Problem" class="img-fluid rounded z-depth-1" %} 
+{% include figure.html path="assets/img/RLProblem.png" title="RL Problem" class="img-fluid rounded" %} 
 <div class="caption">
 Agents act in (or "send actions to") the environment. The environment progresses one time step based on this action, and responds with an observation and reward.
 <d-footnote>Figure from Deepmind Acme paper on arXiv. [arXiv:2006.00979]</d-footnote>
@@ -135,10 +131,8 @@ The observation is a vector of yesterday's EMAs: one entry for each habit. Depen
 The action taken by the actor is today's planned level of performance for every tracked habit, based on yesterday's EMA. If we're behind our running schedule, run today!
 
 The reward is simply 1-mean(abs(1-observation)): see below figure. If all the EMA values yesterday are at 1 (perfectly aligned with the goals of all habits), then the reward is 1. Any deviation will cause the reward to linearly decrease from this max value. We add 1 to make rewards (usually) lie between 0 and 1, just to keep it intuitive.
-{% include figure.html path="assets/img/rewards.jpg" title="RL Problem" class="img-fluid rounded z-depth-1" %} 
-<div class="caption">
-Environment rewards as a function of EMA, averaged across habits.
-</div>
+{% include figure.html path="assets/img/rewards.jpg" title="RL Problem" class="img-fluid rounded " caption="Environment rewards as a function of EMA, averaged across habits."%} 
+
 
 
 Beyond technical details, this is it! The RL actor performs inference on new observations, probabilistically selects actions for each habit, which is then filled in to the Google spreadsheet via the Google Docs API in Python.
@@ -185,14 +179,14 @@ Why bother with the RL model? Well, you may not know the optimal arrangement of 
 However, sample efficiency prevents PPO from accomplishing these tasks. 1-5 million samples may be alright in a simulator with multiple actors in parallel, but most people don't have time to wait that many days to get a good recommendation. This value may be lower when fine tuning a model from simulation on real life data, but is still substantially too large. 
 
 The solution is to use a more sample efficient algorithm. For various projects with costly actions (in particular, [PRL](/blog/2023/PRL/)), I reviewed the literature in late 2022 and experimented with different RL algorithms to gain optimal sample efficiency. The two that rose to the top in this regard were MPO and MuZero (and follow-up papers). MuZero in particular has stellar performance in the discrete domain, because of its usage of Monte Carlo Tree Search, and stellar sample efficiency largely because it is able to "[Reanalyse](https://www.furidamu.org/blog/2020/12/22/muzero-intuition/)" the data. 
-{% include figure.html path="assets/img/reanalyse.webp" title="EfficientZero" class="img-fluid rounded z-depth-1" %} 
+{% include figure.html path="assets/img/reanalyse.webp" title="EfficientZero" class="img-fluid rounded " %} 
 <div class="caption">
 Training loop of MuZero Reanalyse. <d-footnote>From a MuZero blog post by the paper's author. [https://www.furidamu.org/blog/2020/12/22/muzero-intuition/]</d-footnote>
 </div>
 
 
 [EfficientZero](https://arxiv.org/abs/2111.00210) takes this sample efficiency further. (See my implementation and explanation of EfficientZero in blog posts to come!) As one can imagine, this comes at the cost of computational efficiency. However, since the time between steps for our environment is a full day, this is not a dealbreaker for us. While I have moved on to other projects in the meantime, I plan on updating this to use one of these more sample-efficient algorithms to take advantage of this long term "cross pollination" of habit effects. I hope this will result in a more holistic recommendation policy.
-{% include figure.html path="assets/img/efficientZero.png" title="EfficientZero" class="img-fluid rounded z-depth-1" %} 
+{% include figure.html path="assets/img/efficientZero.png" title="EfficientZero" class="img-fluid rounded " %} 
 <div class="caption">
 The gains in sample efficiency in EfficientZero<d-footnote>https://arxiv.org/abs/2111.00210, Figure 1</d-footnote> make one hopeful for the future of RL in the real world.
 </div>

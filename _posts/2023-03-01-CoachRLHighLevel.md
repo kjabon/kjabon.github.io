@@ -59,7 +59,7 @@ So what does a typical day look like?
 
 First thing over coffee, you open your spreadsheet on Google Docs to find out what you're going to be doing today. The row for today has already been filled in, based on the moving average of your "performance" for each habit.
 
-{% include figure.html path="assets/img/habitSheet.jpg" title="example" class="img-fluid rounded z-depth-1" %} 
+{% include figure.html path="assets/img/habitSheet.jpg" title="example" class="img-fluid rounded " %} 
 <div class="caption">
 In red: today's example activities, suggested by CoachRL. In blue: associated moving average of habit performances.
 </div>
@@ -79,7 +79,7 @@ Now that I have today's numbers in front of me, I open my note taking app on my 
 <div class="col">
 </div>
 <div class="col-8">
-{% include figure.html path="assets/img/ipadTemplate.jpg" title="example" class="img-fluid rounded z-depth-1" %}
+{% include figure.html path="assets/img/ipadTemplate.jpg" title="example" class="img-fluid rounded " %}
 </div>
  <div class="col">
 </div>
@@ -98,7 +98,7 @@ Pick a reward you can encapsulate and treat yourself with at will, that you find
 <div class="col">
 </div>
 <div class="col-8">
-{% include figure.html path="assets/img/telegramCoach.jpg" title="example" class="img-fluid rounded z-depth-1" %}
+{% include figure.html path="assets/img/telegramCoach.jpg" title="example" class="img-fluid rounded " %}
 </div>
  <div class="col">
 </div>
