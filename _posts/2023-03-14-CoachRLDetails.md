@@ -152,14 +152,26 @@ I did not have a good intuition for how large a network may be required, how man
 
 Finally, the PPO implementation in Acme did not support MultiDiscrete action spaces. That is, 3 possible actions for habit A, 5 possible actions for habit B, and so on. To fix this, given neural network. Taking inspiration from the Stable Baselines codebase, I wrote a similar implementation in JAX, a sample of which is below. **Link to code!**
 
-~~~ javascript
-  var x = 25;
-  function(x) { 
-    return x * x;<
-  } 
+~~~ python
+  # Compute log probabilities
+  def log_prob(params, actions):
+    logProb = jnp.stack([dist.log_prob(action) for dist, action in
+      zip(getDistribution(params), jaxUnstack(actions, axis=1))], axis=1).sum(axis=1)
+    return logProb
+  
+  # Sample actions
+  def sample(params, key: networksLib.PRNGKey):
+    samp = jnp.stack([dist.sample(seed=key) for dist in
+     getDistribution(params)], axis=1)
+    return samp
 ~~~
 
 
+
+
+<div class="caption">
+JAX/Python code for interfacing with neural networks to compute the log probabilities for use in policy gradient, and sampling from the Multi-Categorical probability distributions given a stack of parameters for those distributions.
+</div>
 
 
 
