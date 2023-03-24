@@ -161,8 +161,7 @@ Finally, the PPO implementation in Acme did not support MultiDiscrete action spa
   
   # Sample actions
   def sample(params, key: networksLib.PRNGKey):
-    samp = jnp.stack([dist.sample(seed=key) for dist in
-     getDistribution(params)], axis=1)
+    samp = jnp.stack([dist.sample(seed=key) for dist in getDistribution(params)], axis=1)
     return samp
 ~~~
 
