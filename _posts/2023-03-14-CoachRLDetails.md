@@ -152,12 +152,12 @@ I did not have a good intuition for how large a network may be required, how man
 
 Finally, the PPO implementation in Acme did not support MultiDiscrete action spaces. That is, 3 possible actions for habit A, 5 possible actions for habit B, and so on. To fix this, given neural network. Taking inspiration from the Stable Baselines codebase, I wrote a similar implementation in JAX, a sample of which is below. **Link to code!**
 
-<d-code block language="javascript">
-  var x = 25;<br/><br/>  
-  function(x) {<br/><br/>  
-    return x * x;<br/><br/>  
-  }<br/><br/>  
-</d-code>
+~~~ javascript
+  var x = 25;
+  function(x) { 
+    return x * x;<
+  } 
+~~~
 
 
 

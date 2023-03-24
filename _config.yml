@@ -112,7 +112,7 @@ bing_site_verification:  # out your bing-site-verification ID (Bing Webmaster)
 
 blog_name: kjabon # blog_name will be displayed in your blog page
 blog_nav_title: blog # your blog must have a title for it to be displayed in the nav bar
-blog_description: blog posts may go here someday
+blog_description: Posts about RL, and sundry
 permalink: /blog/:year/:title/
 
 # Pagination
@@ -171,6 +171,7 @@ news_limit: 5 # leave blank to include all the news in the `_news` folder
 markdown: kramdown
 highlighter: rouge
 kramdown:
+  hard_wrap: true
   input: GFM
   syntax_highlighter_opts:
     css_class: 'highlight'
