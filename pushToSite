@@ -1,4 +1,4 @@
-jekyll build
+sudo jekyll build
 git --work-tree=_site add --all
 git --work-tree=_site commit -m "update site" 
 git --work-tree=_site push origin master:gh-pages 
