@@ -1,9 +1,12 @@
+
+
+sudo jekyll build
+
 cd .git/objects
 ls -al
 sudo chown -R kenny:kenny *
 cd ../..
 
-jekyll build
 git --work-tree=_site add --all
 git --work-tree=_site commit -m "update site" 
 git --work-tree=_site push origin master:gh-pages 
