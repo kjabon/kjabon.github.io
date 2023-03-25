@@ -1,0 +1,8 @@
+jekyll build
+git --work-tree=_site add --all
+git --work-tree=_site commit -m "update site" 
+git --work-tree=_site push origin master:gh-pages 
+
+git add --all
+git commit -m "autogen: backup site"
+git push origin master
