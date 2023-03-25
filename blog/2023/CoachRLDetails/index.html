@@ -31,7 +31,7 @@
     <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;">
     
     <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="canonical" href="https://kjabon.github.io/blog/2023/CoachRLDetails/">
+    <link rel="canonical" href="http://localhost:4000/blog/2023/CoachRLDetails/">
     
     <!-- Dark Mode -->
     
@@ -352,17 +352,18 @@ Agents act in (or "send actions to") the environment. The environment progresses
 
 <p>Finally, the PPO implementation in Acme did not support MultiDiscrete action spaces. That is, 3 possible actions for habit A, 5 possible actions for habit B, and so on. To fix this, given neural network. Taking inspiration from the Stable Baselines codebase, I wrote a similar implementation in JAX, a sample of which is below. <strong>Link to code!</strong></p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1"># Compute log probabilities
-</span>  <span class="k">def</span> <span class="nf">log_prob</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
-    <span class="n">logProb</span> <span class="o">=</span> <span class="n">jnp</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">dist</span><span class="p">.</span><span class="n">log_prob</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="k">for</span> <span class="n">dist</span><span class="p">,</span> <span class="n">action</span> <span class="ow">in</span>
-      <span class="nb">zip</span><span class="p">(</span><span class="n">getDistribution</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="n">jaxUnstack</span><span class="p">(</span><span class="n">actions</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">).</span><span class="nb">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">logProb</span>
+<d-code block="" language="python">
+  # Compute log probabilities
+  def log_prob(params, actions):
+    logProb = jnp.stack([dist.log_prob(action) for dist, action in
+      zip(getDistribution(params), jaxUnstack(actions, axis=1))], axis=1).sum(axis=1)
+    return logProb
   
-  <span class="c1"># Sample actions
-</span>  <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="n">networksLib</span><span class="p">.</span><span class="n">PRNGKey</span><span class="p">):</span>
-    <span class="n">samp</span> <span class="o">=</span> <span class="n">jnp</span><span class="p">.</span><span class="n">stack</span><span class="p">([</span><span class="n">dist</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">dist</span> <span class="ow">in</span> <span class="n">getDistribution</span><span class="p">(</span><span class="n">params</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">samp</span>
-</code></pre></div></div>
+  # Sample actions
+  def sample(params, key: networksLib.PRNGKey):
+    samp = jnp.stack([dist.sample(seed=key) for dist in getDistribution(params)], axis=1)
+    return samp
+</d-code>
 
 <div class="caption">
 JAX/Python code for interfacing with neural networks to compute the log probabilities for use in policy gradient, and sampling from the Multi-Categorical probability distributions given a stack of parameters for those distributions.
