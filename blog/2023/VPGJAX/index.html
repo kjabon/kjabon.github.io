@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<!-- _layouts/distill.html --><html>
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Vanilla Policy Gradient In JAX | Kenneth  Jabon</title>
+    <meta name="author" content="Kenneth  Jabon">
+    <meta name="description" content="A simple implementation using Acme">
+    <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.1/css/academicons.min.css" integrity="sha256-i1+4qU2G2860dGGIOJscdC30s9beBXjFfzjWLjBRsBg=" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700%7CRoboto+Slab:100,300,400,500,700%7CMaterial+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/github.css" media="" id="highlight_theme_light">
+
+    <!-- Styles -->
+    
+    <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;">
+    
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://kjabon.github.io/blog/2023/VPGJAX/">
+    
+    <!-- Dark Mode -->
+    
+
+
+    <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- Distill js -->
+    <script src="/assets/js/distillpub/template.v2.js"></script>
+    <script src="/assets/js/distillpub/transforms.v2.js"></script>
+    <script src="/assets/js/distillpub/overrides.js"></script>
+    
+    <!-- Page/Post style -->
+    <style type="text/css">
+      .fake-img {
+  background: #bbb;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+} .fake-img p {
+  font-family: monospace;
+  color: white;
+  text-align: left;
+  margin: 12px 0;
+  text-align: center;
+  font-size: 16px;
+}
+
+    </style>
+  </head>
+
+  <body>
+<d-front-matter>
+    <script async type="text/json">{
+      "title": "Vanilla Policy Gradient In JAX",
+      "description": "A simple implementation using Acme",
+      "published": "May 3, 2023",
+      "authors": [
+        {
+          "author": "Kenneth Jabon",
+          "authorURL": ""
+          
+        }
+        
+      ],
+      "katex": {
+        "delimiters": [
+          {
+            "left": "$",
+            "right": "$",
+            "display": false
+          },
+          {
+            "left": "$$",
+            "right": "$$",
+            "display": true
+          }
+        ]
+      }
+    }</script>
+  </d-front-matter>
+
+  
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="/"><span class="font-weight-bold">Kenneth </span>Jabon</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog<span class="sr-only">(current)</span></a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/projects/">projects</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/publications/">publications</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/repositories/">repos</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/cv/">cv</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Scrolling Progress Bar -->
+      <progress id="progress" value="0">
+        <div class="progress-container">
+          <span class="progress-bar"></span>
+        </div>
+      </progress>
+    </header>
+
+
+    <!-- Content -->
+    <div class="post distill">
+
+      <d-title>
+        <h1>Vanilla Policy Gradient In JAX</h1>
+        <p>A simple implementation using Acme</p>
+      </d-title>
+
+      <d-byline></d-byline>
+
+      <d-article>
+        <d-contents>
+          <nav class="l-text figcaption">
+          <h3>Contents</h3>
+            <div><a href="#future-return">Future return</a></div>
+            
+          </nav>
+        </d-contents>
+
+        <h4 id="the-code">The code</h4>
+<p>For this blog post, I’m going to implement vanilla policy gradient in JAX. We’ll not only get into a VPG implementation, but perhaps more interestingly, discuss the how and why of using JAX. Note this post focuses on implementation; the theory of VPG is broken down in <a href="/blog/2023/VPG">this post</a>. Feel free to take a look at that first if you find yourself asking “why?”</p>
+
+<p>To begin with, let’s take a look at the pseudocode for the VPG algorithm, courtesy of OpenAI’s <a href="https://spinningup.openai.com/en/latest/algorithms/vpg.html#pseudocode" rel="external nofollow noopener" target="_blank">Spinning Up</a>. Just do a once-over, we’re going to implement it piece by piece.</p>
+
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pseudoVPG.svg-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pseudoVPG.svg-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pseudoVPG.svg-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pseudoVPG.svg" class="img-fluid rounded" width="auto" height="auto" title="Pseudocode" data-zoomable="" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+
+<p>Ok, so maybe that’s a lot to take in all at once. Let’s just take a look at the first line.</p>
+
+<p>THE FIRST LINE<br>
+We need a policy and a value function. Both will be represented by neural networks (of course). I have found that for most starter Gym <a href="https://gymnasium.farama.org/" rel="external nofollow noopener" target="_blank">environments</a>, two layers with 128 weights each do the job just fine (and often even less than this is needed).</p>
+
+<p>The below code is adapted from the Acme implementation of PPO [link]. Kudos to DeepMind for providing excellent baseline implementations of many RL algorithms.</p>
+
+<p>Before we get started, let’s define some convenience classes which will allow us to organize our neural network and all the functions related to it. This will also serve to give us a roadmap for building and initializing our neural networks.</p>
+
+<d-code block="" language="python">
+class VPGNetworks:
+    network:   networks_lib.FeedForwardNetwork
+    sample:    networks_lib.SampleFn    # = Callable[[NetworkOutput, PRNGKey], Action]
+    log_prob:  networks_lib.LogProbFn   # = Callable[[NetworkOutput, Action], LogProb]
+</d-code>
+
+<p>This is pretty straightforward: for RL we need a network, a way to sample from the outputs of that network, and a way to compute the log probabilities of those samples (i.e., the actions).</p>
+
+<p><code class="language-plaintext highlighter-rouge">sample()</code> will take in the network output (including info encoding the probability distribution) and a random number key, and return a sampled action.</p>
+
+<p><code class="language-plaintext highlighter-rouge">log_prob()</code> will take in the network output (again, including the probability distribution) and an action, and return the log probability of that action.</p>
+
+<p>In general we’ll have a vector of actions to contend with, and operate on batches of them.</p>
+
+<p>Let’s take a look at the FFN class.</p>
+<d-code block="" language="python">
+class FeedForwardNetwork:
+  # A pure function: ``params = init(rng, *a, **k)`` 
+  # Initializes and returns the networks parameters.
+  init
+
+  # A pure function: ``out = apply(params, rng, *a, **k)`` 
+  # Computes and returns the outputs of a forward pass.
+  apply
+  
+</d-code>
+
+<p>So, we need a way to initialize and apply our neural network, and for JAX, we need to ensure these are pure functions. Luckily, the haiku library takes care of most of the heavy lifting here, as we’ll see. For clarity, I’ve swept some type checking under the rug.</p>
+
+<p>Let’s get cracking on the network!</p>
+
+<p>The following MLP and Linear functions allow starting with various well-known initializations, falling under <a href="https://jax.readthedocs.io/en/latest/_autosummary/jax.nn.initializers.variance_scaling.html#jax.nn.initializers.variance_scaling" rel="external nofollow noopener" target="_blank">variance scaling</a>. For this post we’ll just use the defaults without specifying those arguments.</p>
+
+<p>Starting with the value function:</p>
+<d-code block="" language="python">
+import haiku as hk
+import jax.numpy as jnp 
+# Same interface as numpy, but uses XLA backend for hardware acceleration!
+# For most intents and purposes, it’s just numpy on a gpu, or otherwise parallelized on cpu.
+
+
+layer_sizes = (128,128)
+V = hk.nets.MLP(layer_sizes, activate_final=True)
+V = hk.Linear(1)(V)
+</d-code>
+
+<p>Now, we almost have an MLP which can serve as our value function, with a single output: the value given the observation! However we’re missing two things: proper input and output dimensions.</p>
+
+<p>We need to tell the model what input dimensions (from the batch of observations) we expect. We’ll leave this as a dummy “obs” variable for now - we’ll come back to it in a minute. We would like to flatten the input, except for the batch dimension (assuming only one batch dimension). That is, for batch size n, we want n observation vectors. We define the following function to do so:</p>
+
+<d-code block="" language="python">
+def batch_flatten(obs):
+	if obs.ndim &gt; 0: 
+		return jnp.reshape(obs, [obs.shape[0], -1])
+	return input
+
+</d-code>
+
+<p>…and prepend a call to this function to our code like so:</p>
+
+<d-code block="" language="python">
+V = batch_flatten(obs)
+V = hk.nets.MLP(layer_sizes, activate_final=True)(V)
+V = hk.Linear(1)(V)
+</d-code>
+
+<p>Finally, we’d like to make sure the output of our value function is a batch-sized vector of values if it isn’t already, so we squeeze the output results. Putting all of this into a haiku Sequential model yields:</p>
+
+<d-code block="" language="python">
+V = hk.Sequential([
+	batch_flatten,
+            hk.nets.MLP(value_layer_sizes, activate_final=True),
+            hk.Linear(1),
+            lambda x: jnp.squeeze(x, axis=-1)
+        ])
+</d-code>
+
+<p>This completes our value network!</p>
+
+<p>Now, our policy model is slightly different. First, because we are assuming a continuous action space, we need to output a distribution over actions, from which the actual action for some observation will be sampled. The policy model will output mean and variance to describe this multivariate normal distribution. Two fully connected layers are branched from the torso, to be able to learn mean and variance from the same embedding of the observation. [Stick in a drawing].</p>
+
+<p>#Here is the torso<br>
+h = utils.batch_concat(obs)<br>
+h = hk.nets.MLP(policy_layer_sizes, activate_final=True)(h)</p>
+
+<p>#Now we add a branch each for the mean and variance<br>
+min_scale = 1e-3<br>
+num_dimensions = np.prod(environment_spec.actions.shape, dtype=int)<br>
+mean_layer = hk.Linear(num_dimensions)<br>
+var_layer = hk.Linear(num_dimensions)</p>
+
+<p>mean_out = mean_layer(h)<br>
+var_out = var_layer(h)</p>
+
+<p>Constrain to a positive scale, as variance must be positive.</p>
+
+<p>Now ReLU will compute faster, and may be a choice worth considering if compute power/training speed is a concern. However, if the user has problems with ReLU “dying” in the zero region (x &lt; 0 -&gt; y = 0), we cannot use leaky ReLU, the usual first solution to this problem, because the output must be positive. Softplus is a better option in this case. (ReLU vs soft plus image)</p>
+
+<p>var_out = jax.nn.softplus(var_out) + 1e-3 #some epsilon; avoid div-by-zero</p>
+
+<p>We’re not quite done just yet, because of the vagaries of JAX. We need to wrap and transform the models we’ve just written.</p>
+
+<p>First, we encapsulate our policy code into a function:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    def _policy_network(obs):
+        
+h = utils.batch_concat(obs)
+#….previous code defining policy model….
+return (mean_out, var_out)
+</code></pre></div></div>
+
+<p>Then, we wrap both the policy and value functions into one forward function, outputting everything we infer from the observation from this function.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def forward_fn(inputs: networks_lib.Observation):
+    inputs = jnp.array(inputs, dtype=jnp.float32) #ensure we are working with JAX NumPy
+    
+    ….previous code defining policy and value functions….
+
+    policy_output = _policy_network(inputs)
+    value = value_network(inputs)
+    return (policy_output, value)
+</code></pre></div></div>
+
+<p>Finally, we use the haiku transform( ) function.</p>
+
+<h1 id="heres-a-quick-aside-on-transform--jax-and-pure-functions-if-you-dont-care-about-why-we-use-it-so-much-as-that-it-makes-deep-learning-fast-feel-free-to-skip-this-section">Here’s a quick aside on transform( ), JAX, and pure functions. If you don’t care about why we use it, so much as that it makes deep learning fast, feel free to skip this section.</h1>
+
+<p>From the haiku documentation:</p>
+<blockquote>
+  <p>…Haiku modules are Python objects that hold references to their own parameters, other modules, and methods that apply functions on user inputs. On the other hand, since JAX operates on pure function transformations, Haiku modules cannot be instantiated verbatim. Rather, the modules need to be wrapped into pure function transformations.<br>
+Haiku provides a simple function transformation, hk.transform, that turns functions that use these object-oriented, functionally “impure” modules into pure functions that can be used with JAX.</p>
+</blockquote>
+
+<p>See here(https://en.wikipedia.org/wiki/Pure_function) for pure functions, and here (https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#pure-functions) for why pure functions are required.</p>
+
+<p>In short, JAX uses cached compilations of functions to speed everything up.</p>
+
+<p>As you, a computer scientist, probably know, an optimizing compiler (here, XLA) converts your code into a form that is both lower level (closer to machine instructions), and able to make certain assumptions to run your computations in fewer steps. Oh yeah, compilation is great!</p>
+
+<p>But of course, anyone who’s written anything moderately sized in C/C++ knows that repeated compilation will send your productivity straight in the trash, right next to the greasy pizza boxes and used Kleenex, never to be seen again. Can we avoid unnecessary compilation?</p>
+
+<p>By mandating pure functions, JAX knows the function’s behavior will never change, and so not only will it never need to be recompiled after the first time it’s used, it will be able to make more assumptions to improve its computational efficiency all the more so!</p>
+
+<p>So, without further ado, let’s transform our model!</p>
+
+<p>forward = hk.without_apply_rng(hk.transform(forward_fn))</p>
+
+<p>Now that we’ve transformed (“purified/JAX-ified”) our model, we’ve exposed a pure interface to our model we can use without worry: that is, forward.init( ), and forward.apply( ).</p>
+
+<p>Let’s initialize our model by creating a dummy observation with the same dimensions as the real inputs to the model, and passing this to init( ). The model will then be configured to handle the correct input and batch dimensions.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dummy_obs = utils.zeros_like(environment_spec.observations)
+dummy_obs = utils.add_batch_dim(dummy_obs)  # Dummy 'sequence' dim.
+network = networks_lib.FeedForwardNetwork(
+    lambda rng: forward.init(rng, dummy_obs), forward_fn.apply)
+</code></pre></div></div>
+
+<p>FeedForwardNetwork simply wraps haiku.transform’s outputs (init and apply) into a standard JAX container.</p>
+
+<p>By the way, you may be wondering “why haiku instead of flax?” Well, the immediate reason is that personally, I’m more used to it. They’re very similar, application-wise, so you should just stick with what works for you.</p>
+
+<blockquote>
+  <blockquote>
+    <p>Highly subjective opinion warning: the feeling I get is that the collection of the Deepmind repositories are less the result of a “wild-west, every small team publishing for themself” environment. Rather, the collection of repos has a sense of cohesion and coordination. I could be wrong about this. Anyway, Deepmind has done a good job <a href="link%20to%20their%20github">open sourcing</a> a ton of their software stack related to reinforcement learning and deep learning, not limited to haiku. Check it out!</p>
+  </blockquote>
+</blockquote>
+
+<p>You’ll also notice an explicit rng key. Now for an aside on that: feel free to skip.</p>
+
+<p>JAX shuttles around these explicit (pseudo-)random number generator parameters in the functions that require them. In this way, you can reproduce experiments without worrying that a different seed is causing you uncertainty in your results behind the scenes. All in the name of good science!</p>
+
+<p>Why is this explicitness necessary? Normally, Python will, from an initial seed, maintain a global key which functions will then access, generating random numbers. This is fine and dandy if there is a single thread of execution. For example, consider the following code. [Footnote: This is effectively the same example as the JAX documentation (https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html#random-numbers-in-jax), read that for further consideration of the implications and solutions.]</p>
+
+<p>import random</p>
+
+<p>random.seed(42)</p>
+
+<p>def funA(): return random.random( )<br>
+def funB(): return random.random( )</p>
+
+<p>def randomSum( ): return funA( ) + 2 * funB( )</p>
+
+<p>print(randomSum( ))</p>
+
+<p>Python will always run randomSum( ) the same way, according to a well-defined <a href="https://docs.python.org/3/reference/expressions.html#operator-precedence" rel="external nofollow noopener" target="_blank">operator precedence</a>. funA( ) is called (first random number from seed 42), then 2*funB( ) is calculated, at which time funB( ) is called (second random number from seed 42), then they are summed. If funB ran before funA on occasion, the final output would change. This never happens. The output of randomSum( ) will always be the same, i.e. reproducible! [small celebration animated emoji/gif] Feel free to add some print statements and run the code to satisfy any doubts.</p>
+
+<p>If we are parallelizing our code (the whole point of using JAX!), we <em>don’t</em> know what order functions will be called in, due to how your OS handles process scheduling (https://en.wikipedia.org/wiki/Scheduling_(computing)#Process_scheduler). [Footnote: These adverse effects are the same for threads and processes assuming every concurrent unit has access to the global key, so we use them interchangeably here.] If we delegated the calling of funA( ) and funB( ) above to different processes, sometimes funB( ) might run first. As a result, using a global random key causes us to sacrifice our beloved reproducibility. Thus, we must explicitly give each process its own specific key, which it can then use in its own good time, regardless of execution order, in a reproducible, well-defined fashion.<br>
+A process executes precisely when it means to.</p>
+
+<p>«&lt;</p>
+
+<p>So, we have our network defined and transformed. All that remains is a little book-keeping to expose sample( ) and log_prob( ) functions. (Again, if you’re asking “why,” you should take a look at the previous post on VPG theory).</p>
+
+<p>def log_prob(params, action):<br>
+    return tfd.MultivariateNormalDiag(<br>
+        loc=params.loc, scale_diag=params.scale_diag).log_prob(action)</p>
+
+<p>def sample(params, key):<br>
+    return tfd.MultivariateNormalDiag(<br>
+        loc=params.loc, scale_diag=params.scale_diag).sample(seed=key)</p>
+
+<p>vpgNetwork = VPGNetworks(<br>
+      network=network,<br>
+      log_prob=log_prob<br>
+      sample=sample<br>
+  )</p>
+
+<p>Whew! We made it past the first line! Surprisingly, most of the hard code is behind us, and we get to jump into the algorithm proper. [This is where the fun begins].</p>
+
+<p>THE SECOND LINE</p>
+
+<p>Ok, not too bad.</p>
+
+
+      </d-article>
+
+      <d-appendix>
+        <d-footnote-list></d-footnote-list>
+        <d-citation-list></d-citation-list>
+      </d-appendix>
+
+      <d-bibliography src="/assets/bibliography/"></d-bibliography><div id="giscus_thread" style="max-width: 800px; margin: 0 auto;">
+  <script>
+    let giscusTheme = localStorage.getItem("theme");
+    let giscusAttributes = {
+        "src": "https://giscus.app/client.js",
+        "data-repo": "kjabon/kjabon.github.io",
+        "data-repo-id": "R_kgDOIuhwgg",
+        "data-category": "Comments",
+        "data-category-id": "DIC_kwDOIuhwgs4CVKPS",
+        "data-mapping": "url",
+        "data-strict": "0",
+        "data-reactions-enabled": "1",
+        "data-emit-metadata": "0",
+        "data-input-position": "top",
+        "data-theme": giscusTheme,
+        "data-lang": "en",
+        "crossorigin": "anonymous",
+        "async": "",
+    };
+
+
+    let giscusScript = document.createElement("script");
+    Object.entries(giscusAttributes).forEach(([key, value]) => giscusScript.setAttribute(key, value));
+    document.getElementById("giscus_thread").appendChild(giscusScript);
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://giscus.app/?ref_noscript" rel="external nofollow noopener" target="_blank">comments powered by giscus.</a>
+</noscript>
+</div>
+</div>
+
+    <!-- Footer -->    <footer class="sticky-bottom mt-5">
+      <div class="container">
+        © Copyright 2023 Kenneth  Jabon. Powered by al-folio.<br>Last updated: May 03, 2023.
+      </div>
+    </footer>
+
+    <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha256-fgLAgv7fyCGopR/gBNq2iW3ZKIdqIcyshnUULC4vex8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id="></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ window.dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', '');
+  </script>
+    
+
+<!-- Scrolling Progress Bar -->
+<script type="text/javascript">
+  /*
+   * This JavaScript code has been adapted from the article 
+   * https://css-tricks.com/reading-position-indicator/ authored by Pankaj Parashar, 
+   * published on the website https://css-tricks.com on the 7th of May, 2014.
+   * Couple of changes were made to the original code to make it compatible 
+   * with the `al-foio` theme.
+   */
+  const progressBar = $("#progress");
+  /*
+   * We set up the bar after all elements are done loading.
+   * In some cases, if the images in the page are larger than the intended
+   * size they'll have on the page, they'll be resized via CSS to accomodate
+   * the desired size. This mistake, however, breaks the computations as the
+   * scroll size is computed as soon as the elements finish loading.
+   * To account for this, a minimal delay was introduced before computing the
+   * values.
+   */
+  window.onload = function () {
+    setTimeout(progressBarSetup, 50);
+  };
+  /*
+   * We set up the bar according to the browser.
+   * If the browser supports the progress element we use that.
+   * Otherwise, we resize the bar thru CSS styling
+   */
+  function progressBarSetup() {
+    if ("max" in document.createElement("progress")) {
+      initializeProgressElement();
+      $(document).on("scroll", function() {
+        progressBar.attr({ value: getCurrentScrollPosition() });
+      });
+      $(window).on("resize", initializeProgressElement);
+    } else {
+      resizeProgressBar();
+      $(document).on("scroll", resizeProgressBar);
+      $(window).on("resize", resizeProgressBar);
+    }
+  }
+  /*
+   * The vertical scroll position is the same as the number of pixels that
+   * are hidden from view above the scrollable area. Thus, a value > 0 is
+   * how much the user has scrolled from the top
+   */
+  function getCurrentScrollPosition() {
+    return $(window).scrollTop();
+  }
+
+  function initializeProgressElement() {
+    let navbarHeight = $("#navbar").outerHeight(true);
+    $("body").css({ "padding-top": navbarHeight });
+    $("progress-container").css({ "padding-top": navbarHeight });
+    progressBar.css({ top: navbarHeight });
+    progressBar.attr({
+      max: getDistanceToScroll(),
+      value: getCurrentScrollPosition(),
+    });
+  }
+  /*
+   * The offset between the html document height and the browser viewport
+   * height will be greater than zero if vertical scroll is possible.
+   * This is the distance the user can scroll
+   */
+  function getDistanceToScroll() {
+    return $(document).height() - $(window).height();
+  }
+
+  function resizeProgressBar() {
+    progressBar.css({ width: getWidthPercentage() + "%" });
+  }
+  // The scroll ratio equals the percentage to resize the bar
+  function getWidthPercentage() {
+    return (getCurrentScrollPosition() / getDistanceToScroll()) * 100;
+  }
+</script>
+
+  
+</body>
+</html>
