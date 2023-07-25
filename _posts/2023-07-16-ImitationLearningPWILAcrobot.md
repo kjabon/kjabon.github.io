@@ -1,0 +1,134 @@
+---
+layout: distill
+title: Imitation Learning with PWIL
+description: An exercise on the Acrobot Swingup task
+giscus_comments: true
+date: 2023-07-18
+tags: rl 
+authors:
+  - name: Kenneth Jabon
+
+  
+
+# Optionally, you can add a table of contents to your post.
+# NOTES:
+#   - make sure that TOC names match the actual section names
+#     for hyperlinks within the post to work correctly.
+#   - we may want to automate TOC generation in the future using
+#     jekyll-toc plugin (https://github.com/toshimaru/jekyll-toc).
+toc:
+  - name: Future return
+
+# Below is an example of injecting additional post-specific styles.
+# If you use this post as a template, delete this _styles block.
+_styles: >
+  .fake-img {
+    background: #bbb;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 12px;
+  }
+  .fake-img p {
+    font-family: monospace;
+    color: white;
+    text-align: left;
+    margin: 12px 0;
+    text-align: center;
+    font-size: 16px;
+  }
+---
+
+Explain ILQR controller, and RL training.
+
+We don't use the standard gym/mujoco environments for this post, because they don't lend themselves as straightforwardly to using classical controllers via access to their dynamics and kinematics (it is possible, I just haven't implemented it).
+
+The basic question of this post is: can we learn a classical controller's policy by imitation learning?
+
+<div class="row">
+<div class="col">
+</div>
+<div class="col-8">
+{% include figure.html path="assets/img/ilqr_swingup.gif" title="ilqr" class="img-fluid rounded" caption="Acrobot swingup with classical ILQR controller. Can this policy be copied by imitation learning?" %} 
+</div>
+ <div class="col">
+</div>
+</div>
+
+
+
+Basically, we want to perform the following tasks.
+
+	Do RL with D4PG on the task, no imitation. This is our baseline. 
+
+{% include figure.html path="assets/img/acrobot_d4pg_10M.png" title="D4PG" class="img-fluid rounded" caption="Acrobot run for 10M timesteps with D4PG." %} 
+
+{% include figure.html path="assets/img/d4pg_swingup.gif" title="D4PG" class="img-fluid rounded" caption="Acrobot run for 10M timesteps with D4PG. During training, upon reaching the top, the episode would end and the environment would reset. After turning this reset off, the policy is still able to swing back up to position, and surprisingly maintains its position." %} 
+
+
+Collect trajectories from an ilqr controller for swingup, stopping and resetting above the threshold line.
+These should be noisy.
+Now, we also train PWIL on ILQR data for 1M time steps. Let's take a look at the results...
+
+{% include figure.html path="assets/img/acrobot_pwil_1M.png" title="pwil" class="img-fluid rounded" caption="Acrobot run for 1M timesteps with PWIL." %} 
+
+We can see that PWIL works! By learning to imitate the classical controller's actions given the state, this learned controller shows signs of life in its training curve. Because it isn't training to maximize rewards directly (the loss function doesn't even contain the environment reward), as expected, the final average return isn't quite so high as something that's optimizing for it.
+
+Let's see what happens when we visualize a rollout of the PWIL-learned policy.
+
+
+
+<div class="row">
+<div class="col">
+</div>
+<div class="col-8">
+{% include figure.html path="assets/img/pwil_swingup.gif" title="pwilSwing" class="img-fluid rounded" caption="Rollout of PWIL policy, learned from expert ILQR demonstrations." %} 
+</div>
+ <div class="col">
+</div>
+</div>
+
+
+Now at this point it's worth discussing the reward and termination scheme. The environment gives a reward of +10 if the end of the pendulum is within some radius of the target (i.e. where the pendulum is completely vertical and pointing up; the angle of the first joint is $$pi$$ and the angle of the second joint is 0). The radius threshold is somewhat large: 0.2 (compare to the length of the pendulum: 0.5). In all cases it will receive a penalty proportional to its distance from the target, and penalties proportional to the absolute position and velocity, to avoid wild spinning.
+
+Finally, the environment resets either after 10 seconds (5000 time steps each 0.002s long), or if the end of the pendulum is both within the aforementioned radius from the target, and its y position is within 0.05 of the target. This y condition is most of the story, but the radius necessitates it to be nearer the top.
+
+Do you see the issue? In the D4PG gif above, we see some interesting behavior suggesting an incorrect environment setup.
+
+The first loop goes to the target as hoped for; the second loop maintains position away from the target, below the y position. That's strange... if we look more closely at the first loop, and notice that the position of the middle joint does **not** go to the top, we can see that the reset condition wasn't actually reached! And indeed, looking at the episode length chart from training the D4PG agent, it is more or less always at the full 5000 time steps. Clearly the agent has learned to **not** terminate the episode, but get as many +10's as it can while staying inside the target radius threshold, but below the y position threshold.
+
+[Insert the length chart here]. 
+
+This is a perfect example of why visualization is so important.
+
+So, what to do? Well, let's first fix the reward, by adding the y condition to be able to get a +10. Let's re-train both D4PG and PWIL with the fix. This should tamp down on the strange "hold near target" behavior, and the max return should be near 0. PWIL doesn't use this reward to train, so we're merely reflecting how the training on the PWIL reward affects progression towards the environment reward. We expect the D4PG curve to end with a higher return, since it's optimizing for the reward. 
+
+[Show D4PG and PWIL training curves].
+
+However, because of the termination condition, it is possible that both policies without resets will get up to the top and then start exhibiting strange behavior.
+
+[Show gifs]
+
+So what exactly is the benefit of imitation learning? For the most part, D4PG seemed to win out here.
+
+Well, it really helps when it's difficult to specify a reward function. Here we know exactly where to go. But if I was instead training a robotic hand to grasp and sort objects of various size, material, and shape, certainly I would be able to specify distance-based measures of reward: how far is the object from the target? But the reward for a "stable grasp" of an object is not so easily mathematically defined. 
+
+[Robot hand pic]
+
+If human demonstrations are provided, we could then learn from that experience with much less sparse rewards than the end result. That intermediary policy could then be fine-tuned with RL on the sparse reward. If the robot hand has an approximately good policy, we can then improve upon it without so much random exploration.
+
+Can we fine tune on this result with RL? Let's give it a shot.
+
+[D4PG fine tuned from PWIL]
+
+One last topic of discussion. Is the policy enacted by the ILQR controller even learnable by the neural network? In theory it should be, but notice how the ILQR controller swings back and forth several times before building up the momentum to make a final attack. Many of the states in this initial swing-up sequence are pretty similar, and maybe the corresponding actions are not-so-similar. I'm not going to try this here, but if this is the case, we could instead try using the history as the input to our policy instead of its current state to try to resolve this issue. This could either involve frame-stacking, an RNN/LSTM policy and value function, or perhaps even an attention mechanism. 
+
+An easy thing to check is whether the D4PG policy, already represented by the same neural network, is learnable by PWIL. 
+Do some roll-outs (they'll probably all be pretty similar; check this first). Learn them with PWIL. 
+
+[Show the curve.]
+
+We expect this to perform quite a bit better.
+
+
+
+Discussion/ conclusions, possible applications. Negative IP, takeaways.
