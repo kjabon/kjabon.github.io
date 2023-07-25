@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<!-- _layouts/distill.html --><html>
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Vanilla Policy Gradient In JAX | Kenneth  Jabon</title>
+    <meta name="author" content="Kenneth  Jabon">
+    <meta name="description" content="A simple implementation using Acme">
+    <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.1/css/academicons.min.css" integrity="sha256-i1+4qU2G2860dGGIOJscdC30s9beBXjFfzjWLjBRsBg=" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700%7CRoboto+Slab:100,300,400,500,700%7CMaterial+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/github.css" media="" id="highlight_theme_light">
+
+    <!-- Styles -->
+    
+    <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;">
+    
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://kjabon.github.io/blog/2023/VPGJAX/">
+    
+    <!-- Dark Mode -->
+    
+
+
+    <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- Distill js -->
+    <script src="/assets/js/distillpub/template.v2.js"></script>
+    <script src="/assets/js/distillpub/transforms.v2.js"></script>
+    <script src="/assets/js/distillpub/overrides.js"></script>
+    
+    <!-- Page/Post style -->
+    <style type="text/css">
+      .fake-img {
+  background: #bbb;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+} .fake-img p {
+  font-family: monospace;
+  color: white;
+  text-align: left;
+  margin: 12px 0;
+  text-align: center;
+  font-size: 16px;
+}
+
+    </style>
+  </head>
+
+  <body>
+<d-front-matter>
+    <script async type="text/json">{
+      "title": "Vanilla Policy Gradient In JAX",
+      "description": "A simple implementation using Acme",
+      "published": "May 3, 2023",
+      "authors": [
+        {
+          "author": "Kenneth Jabon",
+          "authorURL": ""
+          
+        }
+        
+      ],
+      "katex": {
+        "delimiters": [
+          {
+            "left": "$",
+            "right": "$",
+            "display": false
+          },
+          {
+            "left": "$$",
+            "right": "$$",
+            "display": true
+          }
+        ]
+      }
+    }</script>
+  </d-front-matter>
+
+  
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="/"><span class="font-weight-bold">Kenneth </span>Jabon</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog<span class="sr-only">(current)</span></a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/projects/">projects</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/publications/">publications</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/repositories/">repos</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/cv/">cv</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Scrolling Progress Bar -->
+      <progress id="progress" value="0">
+        <div class="progress-container">
+          <span class="progress-bar"></span>
+        </div>
+      </progress>
+    </header>
+
+
+    <!-- Content -->
+    <div class="post distill">
+
+      <d-title>
+        <h1>Vanilla Policy Gradient In JAX</h1>
+        <p>A simple implementation using Acme</p>
+      </d-title>
+
+      <d-byline></d-byline>
+
+      <d-article>
+        <d-contents>
+          <nav class="l-text figcaption">
+          <h3>Contents</h3>
+            <div><a href="#the-first-line">The first line</a></div>
+            <div><a href="#the-rl-loop">The RL loop</a></div>
+            <div><a href="#the-third-line">The third line</a></div>
+            <div><a href="#the-fourth-line">The fourth line</a></div>
+            <div><a href="#lines-5-7a">Lines 5 &amp; 7a</a></div>
+            <div><a href="#lines-6-7b">Lines 6 &amp; 7b</a></div>
+            <div><a href="#putting-it-together">Putting it together</a></div>
+            <div><a href="#performance-and-improvements">Performance and improvements</a></div>
+            
+          </nav>
+        </d-contents>
+
+        <p>For this blog post, We’ll not only get into a Vanilla Policy Gradient (VPG) implementation, but perhaps more interestingly, do it in JAX. Note this post focuses on implementation; the theory of VPG is broken down in <a href="/blog/2023/VPG">this post</a>. Feel free to take a look at that first if you find yourself asking “why?”</p>
+
+<p>We’re going to implement it piece by piece. The full code can be found at this <a href="https://github.com/kjabon/vpg_acme_jax" rel="external nofollow noopener" target="_blank">repo</a>.</p>
+
+<h2 id="the-first-line">The first line</h2>
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pseudoPseudo.svg-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pseudoPseudo.svg-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pseudoPseudo.svg-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pseudoPseudo.svg" class="img-fluid rounded" width="auto" height="auto" title="Algorithm 0" data-zoomable="" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+
+<h3 id="initialize-networks">Initialize networks</h3>
+<p>Warning: this section makes up the first half of this post. If you don’t feel you need to learn how to implement neural networks for RL in JAX, feel free to <a href="https://kjabon.github.io/blog/2023/VPGJAX/#the-rl-loop">skip this section</a> and head directly to the rest of the reinforcement learning loop.</p>
+
+<p>We need a policy and a value function. Both will be represented by neural networks. I have found that for most starter Gym <a href="https://gymnasium.farama.org/" rel="external nofollow noopener" target="_blank">environments</a>, two layers with 128 weights each do the job just fine (and often even less than this is needed).</p>
+
+<p>The below code is adapted from the Acme <a href="https://github.com/deepmind/acme" rel="external nofollow noopener" target="_blank">implementation</a> of PPO. Kudos to DeepMind for providing excellent baseline implementations of many RL algorithms.</p>
+
+<p>Before we get started, let’s define some convenience classes which will allow us to organize our neural network and the functions related to it. This will also serve to give us a roadmap for building and initializing our neural networks.</p>
+
+<d-code block="" language="python">
+class VPGNetworks:
+    network:   networks_lib.FeedForwardNetwork
+    sample:    networks_lib.SampleFn    # = Callable[[NetworkOutput, PRNGKey], Action]
+    log_prob:  networks_lib.LogProbFn   # = Callable[[NetworkOutput, Action], LogProb]
+</d-code>
+
+<p>This is pretty straightforward: for RL we need a network, a way to sample from the outputs of that network, and a way to compute the log probabilities of those samples (i.e., the actions). If you read that and didn’t think “yes, very straightforward,” consider reading the previous <a href="/blog/2023/VPG">post</a>.</p>
+
+<p><code class="language-plaintext highlighter-rouge">sample()</code> will take in the network output (i.e., info encoding the probability distribution) and a random number key, and return a sampled action.</p>
+
+<p><code class="language-plaintext highlighter-rouge">log_prob()</code> will take in the network output (again, the probability distribution) and an action, and return the log probability of that action.</p>
+
+<p>In general our action will be a vector of real numbers (sometimes ints for discrete spaces), and our network will operate on batches of these.</p>
+
+<p>Notice above that <code class="language-plaintext highlighter-rouge">network</code> is of type <code class="language-plaintext highlighter-rouge">FeedForwardNetwork</code>. Let’s take a look at the <code class="language-plaintext highlighter-rouge">FeedForwardNetwork</code> class. This is, again, a skeleton for us to fill out, and also a roadmap.</p>
+<d-code block="" language="python">
+class FeedForwardNetwork:
+  # A pure function: ``params = init(rng, *a, **k)`` 
+  # Initializes and returns the networks parameters.
+  init
+
+  # A pure function: ``out = apply(params, rng, *a, **k)`` 
+  # Computes and returns the outputs of a forward pass.
+  apply
+  
+</d-code>
+
+<p>So, we need a way to initialize and apply our neural network, and for JAX, we need to ensure these are pure functions. Luckily, the <code class="language-plaintext highlighter-rouge">haiku</code> library takes care of most of the heavy lifting here, as we’ll see. For clarity, I’ve swept some type checking under the rug.</p>
+
+<h3 id="lets-get-cracking-on-the-network">Let’s get cracking on the network!</h3>
+
+<p>Our VPG pseudocode specifies to initialize networks. The following MLP and Linear functions allow starting with various well-known initializations, falling under <a href="https://jax.readthedocs.io/en/latest/_autosummary/jax.nn.initializers.variance_scaling.html#jax.nn.initializers.variance_scaling" rel="external nofollow noopener" target="_blank">variance scaling</a>. For this post we’ll just use the defaults without specifying those arguments.</p>
+
+<h4 id="starting-with-the-value-function">Starting with the value function:</h4>
+<d-code block="" language="python">
+import haiku as hk
+import jax.numpy as jnp 
+# jax.numpy has the same interface as numpy, but uses XLA backend for hardware acceleration!
+
+layer_sizes = (128,128)
+V = hk.nets.MLP(layer_sizes, activate_final=True)
+V = hk.Linear(1)(V)
+</d-code>
+
+<details><summary>Why haiku?</summary>
+<p>By the way, you may be wondering “why haiku instead of flax?” Well, the immediate reason is that personally, I’m more used to it. They’re very similar, application-wise, so you should just stick with what works for you.</p>
+
+<p>Highly subjective opinion warning: the feeling I get is that the collection of the Deepmind repositories are less the result of a “wild-west, every small team publishing for themself” environment. Rather, the collection of repos has a sense of cohesion and coordination. I could be wrong about this. Anyway, Deepmind has done a good job <a href="https://github.com/deepmind?q=reinforcement&amp;type=all&amp;language=&amp;sort=" rel="external nofollow noopener" target="_blank">open sourcing</a> a ton of their software stack related to reinforcement learning and deep learning, not limited to haiku. Check it out!</p>
+</details>
+
+<p>Now, we almost have an MLP which can serve as our value function, with a single output: the value given the observation! However we’re missing two things: proper input and output dimensions.</p>
+
+<p>We need to tell the model what input dimensions (from the batch of observations) we expect. We’ll leave this as a dummy <code class="language-plaintext highlighter-rouge">obs</code> variable for now - we’ll come back to it in a minute. We would like to flatten the input, except for the batch dimension. That is, for batch size n, we want n observation vectors. We define the following function to do so:</p>
+
+<d-code block="" language="python">
+def batch_flatten(obs):
+	if obs.ndim &gt; 0: 
+		return jnp.reshape(obs, [obs.shape[0], -1])
+	return input
+
+</d-code>
+
+<p>…and prepend a call to this function to our code like so:</p>
+
+<d-code block="" language="python">
+V = batch_flatten(obs)
+V = hk.nets.MLP(layer_sizes, activate_final=True)(V)
+V = hk.Linear(1)(V)
+</d-code>
+
+<details><summary>More than one batch dimension in JAX?</summary>
+<p>We assume the observation above has one batch dimension (e.g., 64, 128, etc. This is the batch size.). However, if you’ve gone poking around in other JAX examples online, you may notice an extra dimension out front in the main training loop. This is typically the device dimension.</p>
+
+<p>Suppose typically I have a set of dimensions that looks like (batch_size, obs_size), like (128, 64). Adding a device dimension would look like (num_devices, batch_size, obs_size). Across one device, this would look like (1, 128, 64). However, parallelizing across two devices, this would look like (2, 64, 64). Our total batch size remains unchanged, but you can see the batch has been split across the two devices.</p>
+
+<p>Our inner functions (like the past few code blocks) which take in <code class="language-plaintext highlighter-rouge">obs</code> don’t see the device dimension; from their perspective it doesn’t exist, so you can write these as if you only had one device. <code class="language-plaintext highlighter-rouge">pmap()</code> takes care of mapping the full computation to devices, though I won’t cover its usage here; see the <a href="https://jax.readthedocs.io/en/latest/jax-101/06-parallelism.html" rel="external nofollow noopener" target="_blank">documentation</a>. As you can see in those examples, it’s only in the main training loop you need to worry about adding a device dimension to your tensors.</p>
+</details>
+
+<p>Finally, we’d like to make sure the output of our value function is a batch-sized vector of values if it isn’t already, so we squeeze the output results. Putting all of this into a haiku <code class="language-plaintext highlighter-rouge">Sequential</code> model yields:</p>
+
+<d-code block="" language="python">
+value_network = hk.Sequential([
+	batch_flatten,
+	hk.nets.MLP(value_layer_sizes, activate_final=True),
+	hk.Linear(1),
+	lambda x: jnp.squeeze(x, axis=-1)
+])
+</d-code>
+
+<p>This completes our value network!</p>
+
+<h4 id="now-our-policy-model-is-slightly-different">Now, our policy model is slightly different.</h4>
+<p>First, because we are assuming a continuous action space, we need to output a distribution over actions, from which the actual action for some observation will be sampled. The policy model will output mean and variance to describe this multivariate normal distribution. Two fully connected layers are branched from the torso, to be able to learn mean and variance from the same embedding of the observation. For this reason, we don’t use <code class="language-plaintext highlighter-rouge">hk.Sequential</code>.</p>
+
+<p>Here is the torso:</p>
+
+<d-code block="" language="python">
+h = utils.batch_concat(obs)
+h = hk.nets.MLP(policy_layer_sizes, activate_final=True)(h)
+</d-code>
+
+<p>Now we add a branch each for the mean and variance.</p>
+
+<d-code block="" language="python">
+min_scale = 1e-3
+num_dimensions = np.prod(environment_spec.actions.shape, dtype=int)
+mean_layer = hk.Linear(num_dimensions)
+var_layer = hk.Linear(num_dimensions)
+
+mean_out = mean_layer(h)
+var_out = var_layer(h)
+</d-code>
+
+<p>Constrain to a positive scale, as variance must be positive.</p>
+
+<d-code block="" language="python">
+var_out = jax.nn.softplus(var_out) + 1e-3 #some epsilon; avoid div-by-zero
+</d-code>
+
+<details><summary>Why softplus?</summary>
+<p>ReLU will compute faster, and may be a choice worth considering if compute power/training speed is a concern. However, if the user has problems with ReLU “dying” in the zero region (when \(x &lt; 0\), \(y = 0\)), we cannot use leaky ReLU, the usual first solution to this problem, because the output must be positive. Softplus is a better option in this case.</p>
+</details>
+
+<p>We’re not quite done just yet, because of the vagaries of JAX. We need to wrap and transform the models we’ve just written.</p>
+
+<p>First, we encapsulate our policy code into a function:</p>
+<d-code block="" language="python">
+def policy_network(obs):
+	#…previous code defining policy model…
+	return (mean_out, var_out)
+</d-code>
+
+<p>Then, we wrap both the policy and value functions into one forward function, outputting everything we infer from the observation from this function.</p>
+<d-code block="" language="python">
+def forward_fn(inputs: networks_lib.Observation):
+	inputs = jnp.array(inputs, dtype=jnp.float32) #ensure we are working with JAX NumPy
+
+	#…previous code defining policy and value functions…
+
+	policy_output = policy_network(inputs)
+	value = value_network(inputs)
+	return (policy_output, value)
+</d-code>
+
+<p>Finally, we use the haiku <code class="language-plaintext highlighter-rouge">transform()</code> function.</p>
+
+<details><summary>An aside on <code class="language-plaintext highlighter-rouge">transform()</code>, JAX, and pure functions</summary>
+<p>If you don’t care about why we use transform, so much as that it makes deep learning fast, feel free to skip this section.</p>
+
+<p>From the haiku <a href="https://dm-haiku.readthedocs.io/en/latest/notebooks/basics.html" rel="external nofollow noopener" target="_blank">documentation</a>:</p>
+<blockquote>
+  <p>…Haiku modules are Python objects that hold references to their own parameters, other modules, and methods that apply functions on user inputs. On the other hand, since JAX operates on pure function transformations, Haiku modules cannot be instantiated verbatim. Rather, the modules need to be wrapped into pure function transformations.<br>
+Haiku provides a simple function transformation, hk.transform, that turns functions that use these object-oriented, functionally “impure” modules into pure functions that can be used with JAX.</p>
+</blockquote>
+
+<p>See <a href="https://en.wikipedia.org/wiki/Pure_function" rel="external nofollow noopener" target="_blank">here</a> for pure functions, and <a href="https://jax.readthedocs.io/en/latest/notebooks/Common_Gotchas_in_JAX.html#pure-functions" rel="external nofollow noopener" target="_blank">here</a> for why pure functions are required.</p>
+
+<p>In short, JAX uses cached compilations of functions to speed everything up.</p>
+
+<p>As you, a computer scientist, probably know, an optimizing compiler (here, XLA) converts your code into a form that is both lower level (closer to machine instructions), and able to make certain assumptions to run your computations in fewer steps. Oh yeah, compilation is great!</p>
+
+<p>But of course, anyone who’s written anything moderately sized in C/C++ knows that repeated compilation will send your productivity straight in the trash, right next to the greasy pizza boxes and used Kleenex, never to be seen again. Can we avoid unnecessary compilation?</p>
+
+<p>By mandating pure functions, JAX knows the function’s behavior is only dependent on its inputs, and so not only will it never need to be recompiled after the first time it’s used. Tt will be able to make more assumptions to improve its computational efficiency all the more so!</p>
+</details>
+
+<p>So, without further ado, let’s transform our model!</p>
+
+<d-code block="" language="python">
+forward = hk.without_apply_rng(hk.transform(forward_fn))
+</d-code>
+
+<p>Now that we’ve transformed (“purified/JAX-ified”) our model, we’ve exposed a pure interface to our model we can use without worry: that is, <code class="language-plaintext highlighter-rouge">forward.init()</code>, and <code class="language-plaintext highlighter-rouge">forward.apply()</code>.</p>
+
+<p>We’ve additionally wrapped this with <code class="language-plaintext highlighter-rouge">hk.without_apply_rng()</code>. Our forward function’s <code class="language-plaintext highlighter-rouge">apply</code> method may require randomness in general, e.g. if it uses dropout layers during training. In our case, an rng key is not required, so we use this convenience wrapper to avoid needing to pass in an extra parameter when calling <code class="language-plaintext highlighter-rouge">apply()</code>.</p>
+
+<p>Let’s initialize our model by creating a dummy observation with the same dimensions as the real inputs to the model, and passing this to <code class="language-plaintext highlighter-rouge">init()</code>. The model will then be configured to handle the correct input and batch dimensions.</p>
+
+<d-code block="" language="python">
+dummy_obs = utils.zeros_like(environment_spec.observations)
+dummy_obs = utils.add_batch_dim(dummy_obs)
+network = networks_lib.FeedForwardNetwork(
+	lambda rng: forward.init(rng, dummy_obs), forward.apply)
+</d-code>
+
+<p>As we saw in the beginning of this post, <code class="language-plaintext highlighter-rouge">FeedForwardNetwork</code> simply wraps <code class="language-plaintext highlighter-rouge">haiku.transform</code>’s pure functions (<code class="language-plaintext highlighter-rouge">init</code> and <code class="language-plaintext highlighter-rouge">apply</code>) into an Acme container.</p>
+
+<details><summary>Why rng key?</summary>
+<p>JAX shuttles around these explicit (pseudo-)random number generator parameters in the functions that require them. In this way, you can reproduce experiments without worrying that a different seed is causing you uncertainty in your results behind the scenes. All in the name of good science!</p>
+
+<p>Why is this explicitness necessary? Normally, Python will, from an initial seed, maintain a global key which functions will then access, generating random numbers. This is fine and dandy if there is a single thread of execution. For example, consider the following code.<d-footnote> This is effectively the same example as the JAX documentation (https://jax.readthedocs.io/en/latest/jax-101/05-random-numbers.html#random-numbers-in-jax), read that for further consideration of the implications and solutions.</d-footnote></p>
+
+<d-code block="" language="python">
+import random
+
+random.seed(42)
+
+def funA(): return random.random( )
+def funB(): return random.random( )
+
+def randomSum( ): return funA( ) + 2 * funB( )
+
+print(randomSum( ))
+</d-code>
+
+<p>Python will always run <code class="language-plaintext highlighter-rouge">randomSum()</code> the same way, according to a well-defined <a href="https://docs.python.org/3/reference/expressions.html#operator-precedence" rel="external nofollow noopener" target="_blank">operator precedence</a>. <code class="language-plaintext highlighter-rouge">funA()</code> is called (first random number from seed 42), then <code class="language-plaintext highlighter-rouge">2*funB()</code> is calculated, at which time <code class="language-plaintext highlighter-rouge">funB()</code> is called (second random number from seed 42), then they are summed. If <code class="language-plaintext highlighter-rouge">funB</code> ran before <code class="language-plaintext highlighter-rouge">funA</code> on occasion, the final output would change. This never happens. The output of <code class="language-plaintext highlighter-rouge">randomSum()</code> will always be the same, i.e. reproducible!</p>
+
+<p>Feel free to add some print statements and run the code to satisfy any doubts.</p>
+
+<p>If we are parallelizing our code (the whole point of using JAX!), we <em>don’t</em> know what order functions will be called in, due to how your OS handles <a href="https://en.wikipedia.org/wiki/Scheduling_(computing)#Process_scheduler" rel="external nofollow noopener" target="_blank">process scheduling</a>. <d-footnote>These adverse effects are the same for threads and processes assuming every concurrent unit has access to the global key, so we use them interchangeably here.</d-footnote> If we delegated the calling of <code class="language-plaintext highlighter-rouge">funA()</code> and <code class="language-plaintext highlighter-rouge">funB()</code> above to different processes, sometimes <code class="language-plaintext highlighter-rouge">funB()</code> might run first. As a result, using a global random key causes us to sacrifice our beloved reproducibility. Thus, we must explicitly give each process its own specific key, which it can then use in its own good time, regardless of execution order, in a reproducible, well-defined fashion.</p>
+
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/neverLate.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/neverLate.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/neverLate.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/neverLate.gif" class="img-fluid rounded" width="auto" height="auto" title="never late" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture><figcaption class="caption">A process executes precisely when it means to.</figcaption>
+
+</figure>
+
+</details>
+
+<p>So, we have our network defined and transformed. Recalling our container class:</p>
+
+<d-code block="" language="python">
+class VPGNetworks:
+    network:   networks_lib.FeedForwardNetwork
+    sample:    networks_lib.SampleFn    # = Callable[[NetworkOutput, PRNGKey], Action]
+    log_prob:  networks_lib.LogProbFn   # = Callable[[NetworkOutput, Action], LogProb]
+</d-code>
+
+<p>All that remains is a little book-keeping to expose <code class="language-plaintext highlighter-rouge">sample()</code> and <code class="language-plaintext highlighter-rouge">log_prob()</code> functions. First, assume we have a way of getting at the policy’s output parameterizing a normal distribution, <code class="language-plaintext highlighter-rouge">params</code> (which, recall, is <code class="language-plaintext highlighter-rouge">(mean_out, var_out)</code>). With this we’ll be able <code class="language-plaintext highlighter-rouge">sample()</code> the policy. Now that we have the <code class="language-plaintext highlighter-rouge">action</code> returned from this <code class="language-plaintext highlighter-rouge">sample()</code>, we can also calculate the <code class="language-plaintext highlighter-rouge">log_prob()</code>. We just need to use some functions from the <code class="language-plaintext highlighter-rouge">tensorflow_probability</code> library. While we focus on continuous distributions in this post, the procedure is similar for categorical distributions.</p>
+
+<d-code block="" language="python">
+import tensorflow_probability
+tfp = tensorflow_probability.substrates.jax
+tfd = tfp.distributions
+
+def sample(params, key):
+	return tfd.MultivariateNormalDiag(
+		loc=params.loc, scale_diag=params.scale_diag).sample(seed=key)
+		
+def log_prob(params, action):
+	return tfd.MultivariateNormalDiag(
+		loc=params.loc, scale_diag=params.scale_diag).log_prob(action)
+
+vpgNetwork = VPGNetworks(
+	network=network,
+	log_prob=log_prob
+	sample=sample
+)
+</d-code>
+
+<p>Finally, just a bit more glue and book-keeping to take care of exposing an easy and organized way of getting our actions and associated log probabilities in one function call, <code class="language-plaintext highlighter-rouge">inference(params, key, observations)</code>.</p>
+
+<d-code block="" language="python">
+def make_inference_fn(
+    vpg_networks: VPGNetworks,
+    evaluation: bool = False) -&gt; actor_core_lib.FeedForwardPolicyWithExtra:
+  """Returns a function to be used for inference by a PPO actor."""
+
+  def inference(params, key: networks_lib.PRNGKey,
+                observations: networks_lib.Observation):
+    dist_params, _ = vpg_networks.network.apply(params, observations)
+    if evaluation and vpg_networks.sample_eval:
+      actions = vpg_networks.sample_eval(dist_params, key)
+    else:
+      actions = vpg_networks.sample(dist_params, key)
+    if evaluation:
+      return actions, {}
+    log_prob = vpg_networks.log_prob(dist_params, actions)
+    return actions, {'log_prob': log_prob}
+
+  return inference
+</d-code>
+
+<p>Whew! We made it past the first line! Surprisingly, most of the hard code is behind us, and we get to jump into the algorithm proper.</p>
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/whereTheFunBegins-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/whereTheFunBegins-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/whereTheFunBegins-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/whereTheFunBegins.jpg" class="img-fluid rounded" width="auto" height="auto" title="the fun" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture><figcaption class="caption">This is where the fun begins.</figcaption>
+
+</figure>
+
+<h2 id="the-rl-loop">The RL loop</h2>
+
+<p>You should already have an understanding of the full loop before we proceed (see <a href="/blog/2023/VPG">here</a>). <br>
+Let’s dive into each component individually.</p>
+
+<h2 id="the-third-line">The third line</h2>
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pseudoPseudo.svg-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pseudoPseudo.svg-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pseudoPseudo.svg-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pseudoPseudo.svg" class="img-fluid rounded" width="auto" height="auto" title="Algorithm 0" data-zoomable="" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+
+<h3 id="collect-set-of-trajectories">Collect set of trajectories</h3>
+
+<p>We’re going to start at the level of the training loop and drill our way down. We’re going to start seeing a fair bit of Acme machinery for creating and training our agents, but I’ll sweep most of the extraneous stuff under the rug.</p>
+
+<d-code block="" language="python">
+def run(environment, actor, num_episodes)
+
+	train_loop = acme.EnvironmentLoop(
+	      environment,
+	      actor)
+
+
+	def should_terminate(episode_count: int) -&gt; bool:
+		return num_episodes is not None and episode_count &gt;= num_episodes
+
+	episode_count: int = 0
+	while not should_terminate(episode_count):
+		train_loop.run_episode()
+		episode_count += 1
+
+</d-code>
+
+<p>Entering <code class="language-plaintext highlighter-rouge">run_episode()</code>:</p>
+
+<d-code block="" language="python">
+class EnvironmentLoop:
+  def run_episode(self):
+
+    # Start the environment.
+    
+    timestep = self._environment.reset()
+    # Make the first observation. This is where the trajectories are recorded to a data server.
+    self._actor.observe_first(timestep)
+
+    # Run an episode.
+    while not timestep.last():
+    
+      # Generate an action from the agent's policy. 
+      # This will call our inference function above!
+      action = self._actor.select_action(timestep.observation)
+
+      # Step the environment with the agent's selected action.
+      timestep = self._environment.step(action)
+
+      # Have the agent observe the timestep.
+      # This is where the trajectories are recorded to a data server.
+      self._actor.observe(action, next_timestep=timestep)
+
+      # Give the actor the opportunity to update itself.
+      self._actor.update()
+
+
+</d-code>
+
+<p>There’s quite a bit going on here. First the environment is initialized (reset), and we store the first observation in Reverb. Because VPG is an online algorithm, we don’t have a replay buffer; we’re simply storing enough transitions from our trajectory for the next learner step.</p>
+
+<p>Through a series of RL/Acme boilerplate, we send our observation through the neural net representing the policy and sample an action from the output distribution. We <code class="language-plaintext highlighter-rouge">step()</code> the <code class="language-plaintext highlighter-rouge">environment</code> with this <code class="language-plaintext highlighter-rouge">action</code>, and store the transition/timestep in Reverb with <code class="language-plaintext highlighter-rouge">observe()</code>. Finally, in <code class="language-plaintext highlighter-rouge">update()</code>, if there are enough transitions to make up a full batch, the learner (contained within the actor object) will perform a training step (detailed in the following sections), and update the <code class="language-plaintext highlighter-rouge">actor</code> with the resultant new parameters.</p>
+
+<h2 id="the-fourth-line">The fourth line</h2>
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pseudoPseudo.svg-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pseudoPseudo.svg-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pseudoPseudo.svg-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pseudoPseudo.svg" class="img-fluid rounded" width="auto" height="auto" title="Algorithm 0" data-zoomable="" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+
+<h3 id="compute-future-returns">Compute future returns.</h3>
+<p>The theory of this has been discussed in a <a href="https://kjabon.github.io/blog/2023/VPG2/#future-return">previous post</a>; with that in mind the following code block should be self-explanatory.</p>
+<d-code block="" language="python">
+def truncated_discounted_sum_of_rewards(r_t, discount_t, v_t, n):
+
+  local_batch_size = r_t.shape[0]
+  seq_len = r_t.shape[1]
+  pad_size = min(n - 1, seq_len)
+  targets = jnp.concatenate([v_t[:,n - 1:], jnp.ones((local_batch_size, pad_size))*v_t[0,-1]], axis=1)
+  
+  # Pad sequences. Shape is now (T + n - 1,).
+  r_t = jnp.concatenate([r_t, jnp.zeros((local_batch_size, n - 1))], axis=1)
+  discount_t = jnp.concatenate([discount_t, jnp.ones((local_batch_size, n - 1))], axis=1)
+
+  # Work backwards to compute n-step returns.
+  for i in reversed(range(n)):
+      r_ = r_t[:,i:i + seq_len]
+      discount_ = discount_t[:,i:i + seq_len]
+      targets = r_ + discount_ * targets
+
+                                
+</d-code>
+
+<p>However, we wish to use <a href="https://kjabon.github.io/blog/2023/VPG2/#generalized-advantage-estimation">generalized advantage estimation</a>, so we take advantage of an <code class="language-plaintext highlighter-rouge">rlax</code> function to compute the advantages for us, vectorizing over the batch dimension with <code class="language-plaintext highlighter-rouge">jax.vmap()</code>. This takes place on a single device (GPU).</p>
+<d-code block="" language="python">
+vmapped_rlax_truncated_generalized_advantage_estimation = jax.vmap(
+  rlax.truncated_generalized_advantage_estimation,
+  in_axes=(0, 0, None, 0))
+advantages = vmapped_rlax_truncated_generalized_advantage_estimation(
+  rewards[:, :-1], discounts[:, :-1], gae_lambda, behavior_values)
+</d-code>
+
+<h2 id="lines-5--7a">Lines 5 &amp; 7a</h2>
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pseudoPseudo.svg-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pseudoPseudo.svg-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pseudoPseudo.svg-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pseudoPseudo.svg" class="img-fluid rounded" width="auto" height="auto" title="Algorithm 0" data-zoomable="" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+
+<h3 id="compute-the-policy-gradient-and-compute-the-value-function-gradient">Compute the policy gradient, and compute the value function gradient</h3>
+<p>The theory of the policy gradient has been discussed in a <a href="https://kjabon.github.io/blog/2023/VPG/#learning-from-rewards">previous post</a>, and we discuss using the <code class="language-plaintext highlighter-rouge">advantages</code> instead of the future return \(R_t\) <a href="https://kjabon.github.io/blog/2023/VPG2/#generalized-advantage-estimation">here</a>, and we describe the value function loss <a href="https://kjabon.github.io/blog/2023/VPG2/#the-value-function">here</a>.</p>
+
+<p>With that in mind the following code block should be self-explanatory. We run inference on the observations to get our policy and value network outputs, and use this output combined with the <code class="language-plaintext highlighter-rouge">advantages</code> and <code class="language-plaintext highlighter-rouge">target_values</code> (\(R_t\)), to calculate the policy loss and value functions, respectively. Then we run <code class="language-plaintext highlighter-rouge">jax.grad()</code>, and voila, we have the gradient to update our networks with! Very simple. The function also takes care of normalization of input advantages.</p>
+
+<p>As a reminder, here’s the policy gradient:</p>
+
+\[\hat{g}=\frac{1}{\left| \mathcal{D}_k \right|}\sum_{\tau\in \mathcal{D}_k}\sum_{t=0}^{T}\nabla _{\theta}\log\pi_\theta (a_t\vert s_t)_{\theta _k} A_t\]
+
+<p>And here’s the value loss, used to compute the value gradient:</p>
+
+\[\frac{1}{\left\vert  \mathcal{D}_k \right\vert T}\sum_{\tau\in \mathcal{D}_k}\sum_{t=0}^{T}\left(V_\phi(s_t)-\hat{R}_t  \right)^2\]
+
+<d-code block="" language="python">
+class VPGLearner:
+    def vpg_loss(
+        params: networks_lib.Params,
+        observations: networks_lib.Observation,
+        actions: networks_lib.Action,
+        advantages: jnp.ndarray,
+        target_values: networks_lib.Value,
+        behavior_values: networks_lib.Value,
+        behavior_log_probs: networks_lib.LogProb,
+        value_mean: jnp.ndarray,
+        value_std: jnp.ndarray,
+        key: networks_lib.PRNGKey,
+    ) -&gt; Tuple[jnp.ndarray, Dict[str, jnp.ndarray]]:
+      """VPG loss for the policy and the critic."""
+      distribution_params, values = vpg_networks.network.apply(
+          params, observations)
+      if normalize_value:
+        target_values = (target_values - value_mean) / jnp.fmax(value_std, 1e-6)
+      policy_log_probs = vpg_networks.log_prob(distribution_params, actions)
+
+      policy_loss = - (policy_log_probs * advantages).mean()
+
+      value_loss = (values - target_values) ** 2
+      value_loss = jnp.mean(value_loss)
+
+      total_vpg_loss = policy_loss + value_cost * value_loss #value cost is a hyperparameter passed to the VPGLearner class
+
+      return total_vpg_loss, {
+          'loss_total': total_vpg_loss,
+      }
+
+    vpg_loss_grad = jax.grad(vpg_loss, has_aux=True)
+
+                                
+</d-code>
+
+<h2 id="lines-6--7b">Lines 6 &amp; 7b</h2>
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pseudoPseudo.svg-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pseudoPseudo.svg-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pseudoPseudo.svg-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pseudoPseudo.svg" class="img-fluid rounded" width="auto" height="auto" title="Algorithm 0" data-zoomable="" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+
+<h3 id="update-the-policy-and-value-functions-with-their-respective-gradients">Update the policy and value functions with their respective gradients.</h3>
+
+<p>This part should be familiar to anyone with a passing interest in deep learning. With our optimizer (e.g., Adam), we update the model parameters with our computed gradients.</p>
+
+<d-code block="" language="python">
+class VPGLearner:
+    def sgd_step(state: TrainingState, minibatch: Batch):
+      observations = minibatch.observations
+      actions = minibatch.actions
+      advantages = minibatch.advantages
+      target_values = minibatch.target_values
+      behavior_values = minibatch.behavior_values
+      behavior_log_probs = minibatch.behavior_log_probs
+      key, sub_key = jax.random.split(state.random_key)
+
+      loss_grad, metrics = vpg_loss_grad(
+          state.params,
+          observations,
+          actions,
+          advantages,
+          target_values,
+          behavior_values,
+          behavior_log_probs,
+          state.value_mean,
+          state.value_std,
+          sub_key,
+      )
+
+      # Apply updates
+      loss_grad = jax.lax.pmean(loss_grad, axis_name=pmap_axis_name) # Broadcast to devices
+      updates, opt_state = optimizer.update(loss_grad, state.opt_state)
+      model_params = optax.apply_updates(state.params, updates)
+
+      state = state._replace(params=model_params, opt_state=opt_state, random_key=key)
+
+      return state, metrics
+</d-code>
+
+<h2 id="putting-it-together">Putting it together</h2>
+
+<p>The remainder of the code is relatively boilerplate as far as reinforcement learning goes. In short, <code class="language-plaintext highlighter-rouge">sgd_step()</code> is run over the batch (collected trajectories $\mathcal{D}_k$) in a loop of minibatches with <code class="language-plaintext highlighter-rouge">jax.lax.scan()</code>. This happens on each device (GPU), by broadcasting to all available devices with <code class="language-plaintext highlighter-rouge">jax.pmap()</code>. It’s really as simple as it sounds, once you understand the syntax!</p>
+
+<p>The outer RL loop then starts again, collecting trajectories $\tau$ with the actor, which may update its policy from the learner, which acts as a network parameter server to all running actors. Trajectories are stored with DeepMind’s Reverb, and accessed by the learner each learner step by accessing Reverb through a Python iterator interface. You can think of Reverb as a fancy FIFO implemented as a table.</p>
+
+<p>For more information about this information flow, and also how it is easily extended to multiple actors and learners, potentially across multiple machines, check out DeepMind’s Acme library on <a href="https://github.com/deepmind/acme" rel="external nofollow noopener" target="_blank">GitHub</a>.</p>
+
+<h2 id="performance-and-improvements">Performance and improvements</h2>
+
+<p>Unfortunately, VPG does not perform very well at all. There are reasonable additions and improvements which weren’t discussed in this post which are typically added to any reinforcement learning algorithm to improve its robustness, mainly boiling down to normalization of inputs to the loss functions used for calculating gradients. You’ll see these have been added to the code. And yet, even on a simple environment like gym:Pendulum-v1, we see practically no learning. Check out these <a href="https://spinningup.openai.com/en/latest/spinningup/bench.html" rel="external nofollow noopener" target="_blank">benchmarks</a> from OpenAI; VPG’s performance is pitiful compared to modern algorithms.</p>
+
+<p>So this begs the question… why on earth did we go through all these pesky details if it was all for nothing?</p>
+
+<h3 id="vpg-is-a-stepping-stone">VPG is a stepping stone!</h3>
+
+<p>It was not a waste; we’ll see why. Recall all we’ve learned up to this point: we’ve…</p>
+<ul>
+  <li>Understood policies: acting from state</li>
+  <li>Collected trajectories with said policies</li>
+  <li>Understood future return, value functions, and advantage estimation</li>
+  <li>Understood how to define networks in JAX/haiku</li>
+  <li>Understood how to take loss gradients in JAX and apply gradient updates</li>
+  <li>Learned the policy and value function in an RL loop</li>
+</ul>
+
+<p>Let’s take our VPG code which uses all of the concepts we’ve discussed, and make one single change. <br>
+The line which computes the policy loss (the policy gradient without the grad) looks like this:</p>
+
+<d-code block="" language="python">
+policy_loss = -(policy_log_probs * advantages).mean()
+</d-code>
+
+<p>Let’s just swap this out with</p>
+<d-code block="" language="python">
+rhos = jnp.exp(policy_log_probs - behavior_log_probs)
+policy_loss = rlax.clipped_surrogate_pg_loss(
+  rhos, advantages, clipping_epsilon=0.2)
+</d-code>
+
+<p>where the <code class="language-plaintext highlighter-rouge">behavior_log_probs</code> are the same term as <code class="language-plaintext highlighter-rouge">policy_log_probs</code>, only they were calculated earlier, with an older version of the policy network. Let’s skip the details of the <code class="language-plaintext highlighter-rouge">rlax.clipped_surrogate_pg_loss()</code> function.</p>
+
+<p>With this simple change, we go from no performance to great performance on Pendulum-v1.</p>
+
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/vpg_ppo_curves-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/vpg_ppo_curves-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/vpg_ppo_curves-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/vpg_ppo_curves.png" class="img-fluid rounded" width="auto" height="auto" title="VPG vs. PPO" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture><figcaption class="caption">Swap out the loss term, and poof, it works! (Green is PPO, pink is VPG, run on Pendulum-v1)</figcaption>
+
+</figure>
+
+<h3 id="a-stepping-stone-to-ppo">…a stepping stone to PPO</h3>
+
+<p>Wow! How on earth did this happen? Well, this isn’t VPG anymore, it’s PPO, or Proximal Policy Optimization, a ubiquitous and effective algorithm which many practitioners use as a baseline for all other algorithms. (Also, it does take a few more lines to calculate <code class="language-plaintext highlighter-rouge">behavior_log_probs</code>.) There are many, many resources from which to learn PPO, which I’ll leave you to find on your own.</p>
+
+<p>Suffice it to say that by swapping out our policy loss term with a “surrogate loss” which doesn’t allow for too-large policy updates, we can stabilize training and be off to the races. The important takeaway here is that you are now 90% of the way to understanding all policy gradient algorithms, and you’re not doing too bad with all actor-critic algorithms either. Things do get a little more subtle from here on, but you have the foundation. Pat yourself on the back!</p>
+
+<hr>
+
+<p>I recommend you take a look to see the rest of the code that pieces this together <a href="https://github.com/kjabon/vpg_acme_jax" rel="external nofollow noopener" target="_blank">here</a>. As this has merely been modified from the Acme PPO implementation, the obvious next step would be to take a look at that and other resources explaining PPO, and perhaps the <code class="language-plaintext highlighter-rouge">rlax</code> surrogate loss function above. As your path continues, you’ll find that even PPO has a lot of room for improvement. Good luck!</p>
+
+<p>Thank you for reading, and come again soon!</p>
+
+      </d-article>
+
+      <d-appendix>
+        <d-footnote-list></d-footnote-list>
+        <d-citation-list></d-citation-list>
+      </d-appendix>
+
+      <d-bibliography src="/assets/bibliography/"></d-bibliography><div id="giscus_thread" style="max-width: 800px; margin: 0 auto;">
+  <script>
+    let giscusTheme = localStorage.getItem("theme");
+    let giscusAttributes = {
+        "src": "https://giscus.app/client.js",
+        "data-repo": "kjabon/kjabon.github.io",
+        "data-repo-id": "R_kgDOIuhwgg",
+        "data-category": "Comments",
+        "data-category-id": "DIC_kwDOIuhwgs4CVKPS",
+        "data-mapping": "url",
+        "data-strict": "0",
+        "data-reactions-enabled": "1",
+        "data-emit-metadata": "0",
+        "data-input-position": "top",
+        "data-theme": giscusTheme,
+        "data-lang": "en",
+        "crossorigin": "anonymous",
+        "async": "",
+    };
+
+
+    let giscusScript = document.createElement("script");
+    Object.entries(giscusAttributes).forEach(([key, value]) => giscusScript.setAttribute(key, value));
+    document.getElementById("giscus_thread").appendChild(giscusScript);
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://giscus.app/?ref_noscript" rel="external nofollow noopener" target="_blank">comments powered by giscus.</a>
+</noscript>
+</div>
+</div>
+
+    <!-- Footer -->    <footer class="sticky-bottom mt-5">
+      <div class="container">
+        © Copyright 2023 Kenneth  Jabon. Powered by al-folio.<br>Last updated: July 25, 2023.
+      </div>
+    </footer>
+
+    <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha256-fgLAgv7fyCGopR/gBNq2iW3ZKIdqIcyshnUULC4vex8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id="></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ window.dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', '');
+  </script>
+    
+
+<!-- Scrolling Progress Bar -->
+<script type="text/javascript">
+  /*
+   * This JavaScript code has been adapted from the article 
+   * https://css-tricks.com/reading-position-indicator/ authored by Pankaj Parashar, 
+   * published on the website https://css-tricks.com on the 7th of May, 2014.
+   * Couple of changes were made to the original code to make it compatible 
+   * with the `al-foio` theme.
+   */
+  const progressBar = $("#progress");
+  /*
+   * We set up the bar after all elements are done loading.
+   * In some cases, if the images in the page are larger than the intended
+   * size they'll have on the page, they'll be resized via CSS to accomodate
+   * the desired size. This mistake, however, breaks the computations as the
+   * scroll size is computed as soon as the elements finish loading.
+   * To account for this, a minimal delay was introduced before computing the
+   * values.
+   */
+  window.onload = function () {
+    setTimeout(progressBarSetup, 50);
+  };
+  /*
+   * We set up the bar according to the browser.
+   * If the browser supports the progress element we use that.
+   * Otherwise, we resize the bar thru CSS styling
+   */
+  function progressBarSetup() {
+    if ("max" in document.createElement("progress")) {
+      initializeProgressElement();
+      $(document).on("scroll", function() {
+        progressBar.attr({ value: getCurrentScrollPosition() });
+      });
+      $(window).on("resize", initializeProgressElement);
+    } else {
+      resizeProgressBar();
+      $(document).on("scroll", resizeProgressBar);
+      $(window).on("resize", resizeProgressBar);
+    }
+  }
+  /*
+   * The vertical scroll position is the same as the number of pixels that
+   * are hidden from view above the scrollable area. Thus, a value > 0 is
+   * how much the user has scrolled from the top
+   */
+  function getCurrentScrollPosition() {
+    return $(window).scrollTop();
+  }
+
+  function initializeProgressElement() {
+    let navbarHeight = $("#navbar").outerHeight(true);
+    $("body").css({ "padding-top": navbarHeight });
+    $("progress-container").css({ "padding-top": navbarHeight });
+    progressBar.css({ top: navbarHeight });
+    progressBar.attr({
+      max: getDistanceToScroll(),
+      value: getCurrentScrollPosition(),
+    });
+  }
+  /*
+   * The offset between the html document height and the browser viewport
+   * height will be greater than zero if vertical scroll is possible.
+   * This is the distance the user can scroll
+   */
+  function getDistanceToScroll() {
+    return $(document).height() - $(window).height();
+  }
+
+  function resizeProgressBar() {
+    progressBar.css({ width: getWidthPercentage() + "%" });
+  }
+  // The scroll ratio equals the percentage to resize the bar
+  function getWidthPercentage() {
+    return (getCurrentScrollPosition() / getDistanceToScroll()) * 100;
+  }
+</script>
+
+  
+</body>
+</html>
