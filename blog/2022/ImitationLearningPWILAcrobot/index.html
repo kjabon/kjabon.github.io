@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<!-- _layouts/distill.html --><html>
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">    <!-- Metadata, OpenGraph and Schema.org -->
+    
+
+    <!-- Standard metadata -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Imitation Learning with PWIL | Kenneth  Jabon</title>
+    <meta name="author" content="Kenneth  Jabon">
+    <meta name="description" content="An exercise on the Acrobot Swingup task">
+    <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website">
+
+
+    <!-- Bootstrap & MDB -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha256-DF7Zhf293AJxJNTmh5zhoYYIMs2oXitRfBjY+9L//AY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous">
+
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css" integrity="sha256-mUZM63G8m73Mcidfrv5E+Y61y7a12O5mW4ezU3bxqW4=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.1/css/academicons.min.css" integrity="sha256-i1+4qU2G2860dGGIOJscdC30s9beBXjFfzjWLjBRsBg=" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700%7CRoboto+Slab:100,300,400,500,700%7CMaterial+Icons">
+
+    <!-- Code Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jwarby/jekyll-pygments-themes@master/github.css" media="" id="highlight_theme_light">
+
+    <!-- Styles -->
+    
+    <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;">
+    
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="canonical" href="https://kjabon.github.io/blog/2022/ImitationLearningPWILAcrobot/">
+    
+    <!-- Dark Mode -->
+    
+
+
+    <!-- jQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+
+    <!-- MathJax -->
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        tags: 'ams'
+      }
+    };
+  </script>
+  <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.0/es5/tex-mml-chtml.js"></script>
+  <script defer src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
+    <!-- Distill js -->
+    <script src="/assets/js/distillpub/template.v2.js"></script>
+    <script src="/assets/js/distillpub/transforms.v2.js"></script>
+    <script src="/assets/js/distillpub/overrides.js"></script>
+    
+    <!-- Page/Post style -->
+    <style type="text/css">
+      .fake-img {
+  background: #bbb;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+} .fake-img p {
+  font-family: monospace;
+  color: white;
+  text-align: left;
+  margin: 12px 0;
+  text-align: center;
+  font-size: 16px;
+} iframe {
+  display: block;
+  border-style:none;
+}
+
+    </style>
+  </head>
+
+  <body>
+<d-front-matter>
+    <script async type="text/json">{
+      "title": "Imitation Learning with PWIL",
+      "description": "An exercise on the Acrobot Swingup task",
+      "published": "July 18, 2022",
+      "authors": [
+        {
+          "author": "Kenneth Jabon",
+          "authorURL": ""
+          
+        }
+        
+      ],
+      "katex": {
+        "delimiters": [
+          {
+            "left": "$",
+            "right": "$",
+            "display": false
+          },
+          {
+            "left": "$$",
+            "right": "$$",
+            "display": true
+          }
+        ]
+      }
+    }</script>
+  </d-front-matter>
+
+  
+
+    <!-- Header -->
+    <header>
+
+      <!-- Nav Bar -->
+      <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top">
+        <div class="container">
+          <a class="navbar-brand title font-weight-lighter" href="/"><span class="font-weight-bold">Kenneth </span>Jabon</a>
+          <!-- Navbar Toggle -->
+          <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar top-bar"></span>
+            <span class="icon-bar middle-bar"></span>
+            <span class="icon-bar bottom-bar"></span>
+          </button>
+
+          <div class="collapse navbar-collapse text-right" id="navbarNav">
+            <ul class="navbar-nav ml-auto flex-nowrap">
+
+              <!-- About -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/">about</a>
+              </li>
+              
+              <!-- Blog -->
+              <li class="nav-item active">
+                <a class="nav-link" href="/blog/">blog<span class="sr-only">(current)</span></a>
+              </li>
+
+              <!-- Other pages -->
+              <li class="nav-item ">
+                <a class="nav-link" href="/projects/">projects</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/publications/">publications</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/repositories/">repos</a>
+              </li>
+              <li class="nav-item ">
+                <a class="nav-link" href="/cv/">cv</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Scrolling Progress Bar -->
+      <progress id="progress" value="0">
+        <div class="progress-container">
+          <span class="progress-bar"></span>
+        </div>
+      </progress>
+    </header>
+
+
+    <!-- Content -->
+    <div class="post distill">
+
+      <d-title>
+        <h1>Imitation Learning with PWIL</h1>
+        <p>An exercise on the Acrobot Swingup task</p>
+      </d-title>
+
+      <d-byline></d-byline>
+
+      <d-article>
+        <d-contents>
+          <nav class="l-text figcaption">
+          <h3>Contents</h3>
+            <div><a href="#future-return">Future return</a></div>
+            
+          </nav>
+        </d-contents>
+
+        <h2 id="imitation-learning">Imitation learning</h2>
+
+<p>What can we do with imitation learning that we can’t do with plain RL? Well, there some situations in which it can help us out.</p>
+
+<ul>
+  <li>We’re unable to adequately define a reward function for the task we have in mind.</li>
+  <li>The reward function is known, but too sparse to learn efficiently.</li>
+  <li>The reward function is adequate to learn to accomplish the goal, but it accomplishes it in an undesirable way.</li>
+</ul>
+
+<p>We’re going to focus on the last situation for most of this post.</p>
+
+<h2 id="what-do-we-have-without-il">What do we have without IL?</h2>
+
+<p>The learned policies may be idiosyncratic. Perhaps they are too jerky, or do things that look obviously goofy or energy-inefficient. For instance, take a look at the RL-trained humanoid running in the video below. You should get the idea after 30s or so.</p>
+
+<center>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/hx_bgoTF7bs?start=88" frameborder="0" allowfullscreen=""></iframe>​
+</center>
+<div class="caption">
+In this video, we see RL-trained agents successfully navigating environments, with somewhat goofy behavior. More reference links in that video's description.
+</div>
+
+<p>The “arm pumping” in the above video is serving some kind of counterbalancing purpose, but we know intuitively that this behavior is not ideal. Suppose we want that not to happen: defining rewards to tamp down on undesired behaviors can become a tedious and never-ending game of whack-a-mole.</p>
+
+<p>Another example: suppose I was training a robotic hand to grasp and sort objects of various size, material, and shape, certainly I would be able to specify distance-based measures of reward: how far is the object from the target? But the reward for a “stable grasp” of an object is not so easily mathematically defined.</p>
+
+<iframe style="height:300px;width:100%;border:none" frameborder="0" allow="autoplay; fullscreen" allowfullscreen="" src="https://player.vimeo.com/video/365132002?h=689a8eff63&amp;autopause=0&amp;autoplay=1&amp;background=1&amp;loop=1&amp;muted=1&amp;playsinline=1&amp;transparent=1" data-ready="true"></iframe>
+<div class="caption">
+A robotic hand from OpenAI's "Solving Rubik's Cube with a Robot Hand." 
+</div>
+
+<h3 id="feature-engineering">Feature engineering?</h3>
+
+<p>Certainly we could get into the realm of feature engineering… perhaps I could define a stable grasp to be three points of contact at which I am applying a normal force, the sum of these forces being as close to zero as possible, all while relying on friction and torque as little as possible. Add in a feature for whether the center of gravity is below all of my contact points, and we’re looking pretty good.</p>
+
+<p>However, this sort of manual feature engineering tends to be object class-specific. The features for grasping a glass of water will look very different from those for grasping a raspberry, a sheet of paper, a block of agar, or a chicken egg. This could also end up needing quite a few more sensors than we have available, rather than the usual image and/or robot state observation. Currently access to this kind of hardware shouldn’t be assumed, however, including force sensors in our observation will hopefully become the norm.</p>
+
+<p><img src="https://media.springernature.com/full/springer-static/image/art%3A10.1038%2Fs41467-021-27261-0/MediaObjects/41467_2021_27261_Fig1_HTML.png?as=webp" height="400" alt="hand with force sensors"></p>
+<div class="caption">
+An example of a robot hand with force sensors in the fingertips. [https://www.nature.com/articles/s41467-021-27261-0]
+</div>
+
+<p><strong>make that link a footnote</strong></p>
+
+<h2 id="avoid-feature-and-reward-engineering">Avoid feature and reward engineering!</h2>
+
+<p>So, instead, we could have people moving the robot with a handheld controller to perform the desired tasks, record the camera images and control actions, and do imitation learning on these “expert demonstrations.” For the humanoid example, perhaps we could have people navigate obstacle courses while wearing motion capture gear.</p>
+
+<p>There are of course other methods which we could use on this problem, such as <a href="https://arxiv.org/abs/1706.03741" rel="external nofollow noopener" target="_blank">RLHF</a>, and more <a href="https://arxiv.org/abs/2105.12196" rel="external nofollow noopener" target="_blank">advanced methods</a> which build upon what’s discussed here, but let’s stick to imitation learning for this post.</p>
+
+<h2 id="solving-the-acrobot-environment">Solving the Acrobot environment</h2>
+
+<p>With all this motivation out of the way, let’s get going.</p>
+
+<p>If you’re unfamiliar with Acrobot, it’s a classic control problem in which the “elbow” joint can be actuated, the “shoulder” joint swings freely, and the goal is (typically) to swing to a vertical, upwards position, starting from a vertical downwards position. Sometimes the goal is to also maintain this upright position, which we’ll leave for another time.</p>
+
+<p>This may come as a shock, but there exist pretty good solutions to this problem that don’t involve deep reinforcement learning. ILQR, or the Iterative Linear Quadratic Regulator Algorithm, is among the best. See <a href="https://studywolf.wordpress.com/2016/02/03/the-iterative-linear-quadratic-regulator-method/" rel="external nofollow noopener" target="_blank">here</a> for a good explanation. Qualitatively, one thing it seems to be good at is swinging up in a natural, expected fashion. In a real robot, we want to avoid high torques, high velocities, and high jerk values, to avoid wear on the robot and stay within operating limits.</p>
+
+<p>The basic exercise of this post is: can we learn a classical ILQR controller’s policy for solving acrobot-swingup with imitation learning?</p>
+
+<div class="row">
+<div class="col">
+</div>
+<div class="col-8">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/ilqr_swingup.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/ilqr_swingup.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/ilqr_swingup.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/ilqr_swingup.gif" class="img-fluid rounded" width="auto" height="auto" title="ilqr" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture><figcaption class="caption">Acrobot swingup with classical ILQR controller.</figcaption>
+
+</figure>
+ 
+</div>
+ <div class="col">
+</div>
+</div>
+
+<p>We don’t use the standard gym/mujoco environments for this post, because they don’t lend themselves as straightforwardly to using classical controllers via access to their dynamics and kinematics (it is possible, I just haven’t implemented it). Instead we use <a href="https://github.com/dfki-ric-underactuated-lab/double_pendulum" rel="external nofollow noopener" target="_blank">this</a> repo.</p>
+
+<p>Before imitation learning, we’ll get a baseline with reinforcement learning.</p>
+
+<h2 id="d4pg-baseline">D4PG Baseline</h2>
+
+<iframe src="/assets/plotly/D4PG_train_curve.html" frameborder="0" scrolling="no" height="500px" width="100%" style="border: 1px dashed grey;"></iframe>
+<div class="caption">
+Acrobot training data with D4PG.
+</div>
+
+<div class="row">
+<div class="col">
+</div>
+<div class="col-8">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/d4pg_swingup.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/d4pg_swingup.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/d4pg_swingup.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/d4pg_swingup.gif" class="img-fluid rounded" width="auto" height="auto" title="D4PG" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture><figcaption class="caption">Acrobot run after 10M training steps with D4PG.</figcaption>
+
+</figure>
+ 
+</div>
+ <div class="col">
+</div>
+</div>
+
+<p>This uses the D4PG algorithm, and is straightforward as far as RL goes. No tricks here. Before getting into a discussion of results, let’s get some results with imitation learning as well.</p>
+
+<h2 id="imitation-learning-with-pwil">Imitation Learning with PWIL</h2>
+
+<p>First, we collect trajectories from an ILQR controller for swingup. The environment terminates and resets once the top is reached within some tolerance. Taking inspiration from <a href="https://arxiv.org/abs/1703.09327" rel="external nofollow noopener" target="_blank">DART</a>, since we have the option, we inject the ILQR controller’s actions with noise. We use <a href="https://github.com/deepmind/envlogger" rel="external nofollow noopener" target="_blank">envlogger</a> to record trajectories to a Tensorflow dataset. Another option would be to store to Reverb with the same library, if you’re more familiar with that.</p>
+
+<p>Next, we train PWIL on these collected trajectories for 1M time steps. Let’s take a look at the results…</p>
+
+<iframe src="/assets/plotly/pwil_pre-fix.html" frameborder="0" scrolling="no" height="500px" width="100%" style="border: 1px dashed grey;"></iframe>
+<div class="caption">
+Acrobot run for 1M timesteps with PWIL.
+</div>
+
+<p>By learning to imitate the classical controller’s actions given the state, this learned controller shows signs of life in its training curve. Because it isn’t training to maximize rewards directly (the loss function doesn’t even contain the environment reward), as expected, the final average return isn’t quite so high as something that’s optimizing for it.</p>
+
+<p>Let’s visualize a rollout of the PWIL-learned policy.</p>
+
+<div class="row">
+<div class="col">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/ilqr_swingup.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/ilqr_swingup.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/ilqr_swingup.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/ilqr_swingup.gif" class="img-fluid rounded" width="auto" height="auto" title="ilqr" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+ 
+</div>
+<div class="col">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pwil_swingup.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pwil_swingup.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pwil_swingup.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pwil_swingup.gif" class="img-fluid rounded" width="auto" height="auto" title="pwilSwing" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+ 
+</div>
+</div>
+<div class="caption">
+Left: Acrobot swingup with classical ILQR controller. Right: Rollout of PWIL policy, learned from expert ILQR demonstrations.
+</div>
+
+<p>It doesn’t mimic the ILQR controller perfectly; the torque actions are not so smooth in time, and the trajectory is not exactly the same. This was trained with two sources of noise: the ILQR controller itself had its actions and observations perturbed, and PWIL additionally perturbs actions. Because of this, the ILQR example may not be perfectly representative of that algorithms behavior. This said, the performance is surprisingly good; training on more demonstrations for more timesteps may mimic the original controller even better.</p>
+
+<h2 id="discussion">Discussion</h2>
+
+<p>Now at this point it’s worth discussing the reward and termination scheme.</p>
+
+<h3 id="rewards">Rewards</h3>
+
+<p>The environment gives a reward of +10 if the end of the pendulum is within some radius of the target (i.e. where the pendulum is completely vertical and pointing up; the angle of the first joint is \(\pi\) and the angle of the second joint is 0). The radius threshold is somewhat large: 0.2 (compare to the length of the pendulum: 0.5). In all cases it will receive a penalty proportional to its distance from the target, and penalties proportional to the absolute position and velocity, to avoid wild spinning.</p>
+
+<h3 id="termination--reset">Termination / reset</h3>
+<p>Finally, the environment resets either after 10 seconds (5000 time steps each 0.002s long), or if the end of the pendulum is both within the aforementioned radius from the target, and its y position is within 0.05 of the target. This y condition is most of the story, but the radius necessitates it to be nearer to the center.</p>
+
+<p>There is a potential discrepancy in this setup: do you see it? Let’s take another look at the D4PG rollout.</p>
+
+<div class="row">
+<div class="col">
+</div>
+<div class="col-8">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/d4pg_swingup.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/d4pg_swingup.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/d4pg_swingup.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/d4pg_swingup.gif" class="img-fluid rounded" width="auto" height="auto" title="D4PG" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture><figcaption class="caption">Acrobot run after 10M training steps with D4PG (reinserted here for convenience).</figcaption>
+
+</figure>
+ 
+</div>
+ <div class="col">
+</div>
+</div>
+
+<p>The first loop goes to the target as hoped for; the second loop maintains position some distance from the target, below the y position. That’s strange… if we look more closely at the first loop, and notice that the position of the middle joint does <strong>not</strong> go to the top, we can see that the termination condition wasn’t actually reached! And indeed, looking at the episode length chart from training the D4PG agent, it is more or less always at the full 5000 time steps. Clearly the agent has learned to <strong>not</strong> terminate the episode, but get as many +10’s as it can while staying inside the target radius threshold, but below the y position threshold.</p>
+
+<iframe src="/assets/plotly/d4pg_length.html" frameborder="0" scrolling="no" height="500px" width="100%" style="border: 1px dashed grey;"></iframe>
+<div class="caption">
+The D4PG agent learns to not terminate episodes; the episode length is (usually) 5000.
+</div>
+
+<p>This is a perfect example of why visualization is so important.</p>
+
+<h2 id="what-to-do">What to do?</h2>
+<p>Let’s simplify the reward, so there’s no conditional +10. Let’s re-train both D4PG and PWIL with the fix. This should tamp down on the  “hold near target” behavior, and the max return should be near 0. PWIL doesn’t use this reward to train, so we’re merely reflecting how the training on the PWIL reward affects progression towards the environment reward. We still expect the D4PG curve to end with a higher return, since it’s optimizing for the reward, however it should converge on some value just below 0.</p>
+
+<iframe src="/assets/plotly/D4PG_train_curve_reward_fix.html" frameborder="0" scrolling="no" height="500px" width="100%" style="border: 1px dashed grey;"></iframe>
+<div class="caption">
+Acrobot run after 10M training steps with D4PG (removed 10+ reward; only negative rewards).
+</div>
+
+<iframe src="/assets/plotly/pwil_train_curve_reward_fix.html" frameborder="0" scrolling="no" height="500px" width="100%" style="border: 1px dashed grey;"></iframe>
+<div class="caption">
+Acrobot run after 1M training steps with PWIL (removed 10+ reward; only negative rewards).
+</div>
+
+<p>While D4PG appears to have an edge on returns, PWIL is not far behind, and may catch up with further training.</p>
+
+<div class="row">
+<div class="col">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/d4pg_swingup_fix.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/d4pg_swingup_fix.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/d4pg_swingup_fix.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/d4pg_swingup_fix.gif" class="img-fluid rounded" width="auto" height="auto" title="d4pgfix" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+ 
+</div>
+<div class="col">
+<figure>
+
+  <picture>
+    
+    <source class="responsive-img-srcset" media="(max-width: 480px)" srcset="/assets/img/pwil_swingup_fix.gif-480.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 800px)" srcset="/assets/img/pwil_swingup_fix.gif-800.webp"></source>
+    <source class="responsive-img-srcset" media="(max-width: 1400px)" srcset="/assets/img/pwil_swingup_fix.gif-1400.webp"></source>
+    
+
+    <!-- Fallback to the original file -->
+    <img src="/assets/img/pwil_swingup_fix.gif" class="img-fluid rounded" width="auto" height="auto" title="pwilSwingfix" onerror="this.onerror=null; $('.responsive-img-srcset').remove();">
+
+  </picture>
+
+</figure>
+ 
+</div>
+</div>
+<div class="caption">
+Left: Rollout of D4PG policy, after 10M training steps (10+ rewards removed). Right: Rollout of PWIL policy, after 1M training steps.
+</div>
+
+<p>Now, our D4PG agent shoots straight to the target. Our PWIL-trained agent, as before, takes a few swings to build momentum before its final approach. Note, the PWIL training / loss function never changed (it doesn’t see environment reward). This different result from the previous PWIL rollout is merely the effect of randomness during training, and acting during this particular rollout. If more care was taken to fix all RNG seeds through the entire process, we would expect the same result, to within numerical error.</p>
+
+<p>So what exactly is the benefit of imitation learning? Looking purely at rewards, D4PG seemed to win out here. Just as well, it achieves the top position much more quickly. Well, considering the two gifs above, let’s ask ourselves: which would we prefer to run on a real robot? If we’re concerned with robotics (amongst many other applications), we’re going to have to come out of the simulation into the real world at some point.</p>
+
+<p>Taking into consideration the maximum torque a robot may be capable of, and the wear that may result from both high speeds and discontinuous torque commands in time (i.e., jerk), the PWIL agent starts to look more appealing. It uses a lower torque, the maximum \(\Delta \tau\) between timesteps (finite-difference jerk) is lower, and it achieves lower maximum speeds. Intuitively, one might describe this method as “more natural,” akin to the way we would expect a human gymnast to swing up.</p>
+
+<p>This last point is really the kicker for imitation learning. We know intuitively the “safer,” “natural” trajectory. Supposing we have motion capture data from real gymnasts swinging to an upright position, we would be able to (barring the double-jointed hips humans would need to replicate the Acrobot).</p>
+
+<p>If human demonstrations are provided, we could then learn from that experience with much less sparse rewards than the end result. That intermediary policy could then be fine-tuned with RL on the sparse reward. If the robot hand has an approximately good policy, we can then improve upon it without so much random exploration.</p>
+
+<p>Can we fine tune on this result with RL? Let’s give it a shot.</p>
+
+<p>[D4PG fine tuned from PWIL]</p>
+
+<p>One last topic of discussion. Is the policy enacted by the ILQR controller even learnable by the neural network? In theory it should be, but notice how the ILQR controller swings back and forth several times before building up the momentum to make a final attack. Many of the states in this initial swing-up sequence are pretty similar, and maybe the corresponding actions are not-so-similar. I’m not going to try this here, but if this is the case, we could instead try using the history as the input to our policy instead of its current state to try to resolve this issue. This could either involve frame-stacking, an RNN/LSTM policy and value function, or perhaps even an attention mechanism.</p>
+
+<p>An easy thing to check is whether the D4PG policy, already represented by the same neural network, is learnable by PWIL. <br>
+Do some roll-outs (they’ll probably all be pretty similar; check this first). Learn them with PWIL.</p>
+
+<p>[Show the curve.]</p>
+
+<p>We expect this to perform quite a bit better.</p>
+
+<p>Discussion/ conclusions, possible applications. Negative IP, takeaways.</p>
+
+<p><strong>Replace all plots with matplotlib/plotly</strong></p>
+
+      </d-article>
+
+      <d-appendix>
+        <d-footnote-list></d-footnote-list>
+        <d-citation-list></d-citation-list>
+      </d-appendix>
+
+      <d-bibliography src="/assets/bibliography/"></d-bibliography><div id="giscus_thread" style="max-width: 800px; margin: 0 auto;">
+  <script>
+    let giscusTheme = localStorage.getItem("theme");
+    let giscusAttributes = {
+        "src": "https://giscus.app/client.js",
+        "data-repo": "kjabon/kjabon.github.io",
+        "data-repo-id": "R_kgDOIuhwgg",
+        "data-category": "Comments",
+        "data-category-id": "DIC_kwDOIuhwgs4CVKPS",
+        "data-mapping": "url",
+        "data-strict": "0",
+        "data-reactions-enabled": "1",
+        "data-emit-metadata": "0",
+        "data-input-position": "top",
+        "data-theme": giscusTheme,
+        "data-lang": "en",
+        "crossorigin": "anonymous",
+        "async": "",
+    };
+
+
+    let giscusScript = document.createElement("script");
+    Object.entries(giscusAttributes).forEach(([key, value]) => giscusScript.setAttribute(key, value));
+    document.getElementById("giscus_thread").appendChild(giscusScript);
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://giscus.app/?ref_noscript" rel="external nofollow noopener" target="_blank">comments powered by giscus.</a>
+</noscript>
+</div>
+</div>
+
+    <!-- Footer -->    <footer class="sticky-bottom mt-5">
+      <div class="container">
+        © Copyright 2023 Kenneth  Jabon. Powered by al-folio.<br>Last updated: August 03, 2023.
+      </div>
+    </footer>
+
+    <!-- Bootsrap & MDB scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha256-fgLAgv7fyCGopR/gBNq2iW3ZKIdqIcyshnUULC4vex8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id="></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ window.dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', '');
+  </script>
+    
+
+<!-- Scrolling Progress Bar -->
+<script type="text/javascript">
+  /*
+   * This JavaScript code has been adapted from the article 
+   * https://css-tricks.com/reading-position-indicator/ authored by Pankaj Parashar, 
+   * published on the website https://css-tricks.com on the 7th of May, 2014.
+   * Couple of changes were made to the original code to make it compatible 
+   * with the `al-foio` theme.
+   */
+  const progressBar = $("#progress");
+  /*
+   * We set up the bar after all elements are done loading.
+   * In some cases, if the images in the page are larger than the intended
+   * size they'll have on the page, they'll be resized via CSS to accomodate
+   * the desired size. This mistake, however, breaks the computations as the
+   * scroll size is computed as soon as the elements finish loading.
+   * To account for this, a minimal delay was introduced before computing the
+   * values.
+   */
+  window.onload = function () {
+    setTimeout(progressBarSetup, 50);
+  };
+  /*
+   * We set up the bar according to the browser.
+   * If the browser supports the progress element we use that.
+   * Otherwise, we resize the bar thru CSS styling
+   */
+  function progressBarSetup() {
+    if ("max" in document.createElement("progress")) {
+      initializeProgressElement();
+      $(document).on("scroll", function() {
+        progressBar.attr({ value: getCurrentScrollPosition() });
+      });
+      $(window).on("resize", initializeProgressElement);
+    } else {
+      resizeProgressBar();
+      $(document).on("scroll", resizeProgressBar);
+      $(window).on("resize", resizeProgressBar);
+    }
+  }
+  /*
+   * The vertical scroll position is the same as the number of pixels that
+   * are hidden from view above the scrollable area. Thus, a value > 0 is
+   * how much the user has scrolled from the top
+   */
+  function getCurrentScrollPosition() {
+    return $(window).scrollTop();
+  }
+
+  function initializeProgressElement() {
+    let navbarHeight = $("#navbar").outerHeight(true);
+    $("body").css({ "padding-top": navbarHeight });
+    $("progress-container").css({ "padding-top": navbarHeight });
+    progressBar.css({ top: navbarHeight });
+    progressBar.attr({
+      max: getDistanceToScroll(),
+      value: getCurrentScrollPosition(),
+    });
+  }
+  /*
+   * The offset between the html document height and the browser viewport
+   * height will be greater than zero if vertical scroll is possible.
+   * This is the distance the user can scroll
+   */
+  function getDistanceToScroll() {
+    return $(document).height() - $(window).height();
+  }
+
+  function resizeProgressBar() {
+    progressBar.css({ width: getWidthPercentage() + "%" });
+  }
+  // The scroll ratio equals the percentage to resize the bar
+  function getWidthPercentage() {
+    return (getCurrentScrollPosition() / getDistanceToScroll()) * 100;
+  }
+</script>
+
+  
+</body>
+</html>
