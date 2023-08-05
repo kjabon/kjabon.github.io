@@ -1,9 +1,0 @@
-github_users:
-  - kjabon
-github_repos:
-  - vpg_acme_jax
-  - image_regression
-  - kjabon/coachRL
-  - kjabon/maxwell_fdfd
-  - kjabon/AcmeGPUHelper
-  - kjabon/rewardGenerator
